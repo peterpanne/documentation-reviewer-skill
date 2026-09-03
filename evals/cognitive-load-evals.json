@@ -1,0 +1,55 @@
+[
+  {
+    "name": "quickstart-hidden-prerequisites-and-context-switching",
+    "query": "Review a getting-started guide where the user must open three reference pages to discover a required namespace, permission, and configuration value before the example works. The guide itself links those pages but does not state the required values or defaults.",
+    "expected_behavior": [
+      "Uses the cognitive-load specialist in a substantial review or applies the same lens directly in a narrow review",
+      "Identifies avoidable context switching and working-memory burden rather than merely saying the page is long or confusing",
+      "Distinguishes the product's real prerequisites from the documentation's failure to colocate them",
+      "Recommends the smallest useful fix such as stating required values/defaults at the point of use while keeping deeper reference links optional",
+      "Maps the finding to first-success and/or information-architecture scoring rather than creating a separate cognitive-load score"
+    ]
+  },
+  {
+    "name": "too-many-choices-before-first-success",
+    "query": "Review a quickstart that presents six deployment modes, four optional tuning parameters, and three authentication patterns before showing any recommended path. All are valid, but the majority of new users should use one default deployment mode and one authentication pattern.",
+    "expected_behavior": [
+      "Flags avoidable decision load before first success",
+      "Does not recommend deleting valid advanced options",
+      "Suggests a recommended default path first and moves alternatives or tuning after initial success",
+      "Explains the likely developer impact in terms of hesitation, wrong choices, or delayed first success",
+      "Avoids treating the underlying product complexity itself as a documentation defect"
+    ]
+  },
+  {
+    "name": "intrinsic-complexity-not-a-finding",
+    "query": "Review reference documentation for a genuinely complex Kubernetes policy object with many required fields and nested structures. The page defines every field, uses consistent terms, links concepts at the point of need, gives a minimal valid example, and provides a decision table for the few real alternatives.",
+    "expected_behavior": [
+      "Does not flag cognitive load merely because the domain object is complex or the page is long",
+      "Recognizes that intrinsic product complexity is different from avoidable documentation-created burden",
+      "Rewards chunking, complete examples, consistent terminology, and decision support",
+      "Does not propose arbitrary page splitting or simplification that would make the reference less precise"
+    ]
+  },
+  {
+    "name": "terminology-churn-across-journey",
+    "query": "Review docs where navigation says 'render mode', the quickstart calls it 'template mode', action.yml uses the input name 'operation', and troubleshooting calls the same concept 'dry-run'. The docs never explain whether these names are aliases or different concepts.",
+    "expected_behavior": [
+      "Identifies mental translation and ambiguity caused by inconsistent terminology",
+      "Cross-checks source-of-truth metadata before deciding which term is canonical",
+      "Explains the cognitive burden as repeated reconciliation during navigation, configuration, and troubleshooting",
+      "Merges overlapping terminology, reference, and cognitive-load reports into one root-cause finding rather than scoring them multiple times"
+    ]
+  },
+  {
+    "name": "cognitive-load-confidence-filter",
+    "query": "During a parallel review, the cognitive-load specialist reports two findings: A has confidence 92 because a required permission is only revealed after the command that fails without it; B has confidence 55 because the reviewer personally prefers shorter paragraphs although the task remains clear and self-contained.",
+    "expected_behavior": [
+      "Keeps finding A as a strong evidence-backed load hotspot",
+      "Drops finding B from scored findings as a weak stylistic preference",
+      "Does not equate confidence with severity",
+      "Requires at least 80 confidence if finding A is elevated to High or Critical",
+      "Maps the accepted finding to the relevant existing rubric category instead of adding a separate cognitive-load score"
+    ]
+  }
+]
