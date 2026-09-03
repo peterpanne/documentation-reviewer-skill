@@ -1,0 +1,8 @@
+{
+  "name": "documentation-reviewer",
+  "version": "1.0.0",
+  "description": "Reviews developer-facing software documentation with a weighted quality rubric and MkDocs-specific checks.",
+  "author": {
+    "name": "peterpanne"
+  }
+}
