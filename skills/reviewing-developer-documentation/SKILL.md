@@ -9,15 +9,14 @@ Review documentation as a developer trying to complete real work. Optimize for c
 
 ## Operating rules
 
-- Read project-specific instructions first: `CLAUDE.md`, `CONTRIBUTING.md`, documentation style guides, and relevant repository conventions.
-- Treat implementation, schemas, action metadata, configuration definitions, tests, and release behavior as sources of truth. Never invent behavior to fill a documentation gap.
+- Read project instructions first: `CLAUDE.md`, `CONTRIBUTING.md`, documentation style guides, and repository conventions.
+- Treat implementation, schemas, action metadata, configuration definitions, tests, and released behavior as sources of truth. Never invent behavior to fill a documentation gap.
 - Separate **incorrect**, **missing**, **ambiguous**, and **unverified** information.
-- Verify commands, flags, configuration keys, file paths, URLs, UI labels, and internal page links before treating them as valid. Plausible-looking syntax is not evidence.
+- Verify commands, flags, configuration keys, paths, URLs, UI labels, and internal links before treating them as valid.
 - Distinguish intrinsic product/domain complexity from avoidable complexity introduced by the documentation.
-- Prioritize reader impact over stylistic preference. Do not flood the review with low-value grammar nits.
-- Do not modify files during a review unless the user explicitly asks to fix findings.
-- Never expose secrets found in examples, fixtures, workflows, logs, or local configuration. Refer to the file and issue without repeating the secret.
-- When current upstream behavior matters, verify it from authoritative sources if network access is available. Avoid hard-coding time-sensitive ecosystem claims into the review.
+- Prioritize developer impact over stylistic preference. Avoid low-value grammar and formatting nits.
+- Do not modify files during a review unless the user explicitly asks for fixes.
+- Never reproduce secrets discovered in examples, fixtures, workflows, logs, or configuration.
 
 ## Review workflow
 
@@ -25,153 +24,172 @@ Review documentation as a developer trying to complete real work. Optimize for c
 
 Determine:
 
-- who the intended developers are and what knowledge is assumed;
-- the product's main jobs-to-be-done;
+- intended developer audience and assumed knowledge;
+- primary jobs-to-be-done;
 - supported versions, environments, permissions, and important constraints;
-- whether this is a full-site review, a changed-docs/PR review, or an MkDocs configuration review.
+- whether this is a full-site review, multi-area documentation review/PR, or narrow page/configuration review.
 
-If the user supplied enough context, proceed without asking unnecessary questions.
+If the user supplied enough context, proceed without unnecessary questions.
 
-### 2. Inventory documentation and sources of truth
+### 2. Orient once
 
-Inspect the repository structure and locate, when present:
+Perform a shallow orientation pass before deep review work. Locate the relevant subset of:
 
 - `mkdocs.yml` / `mkdocs.yaml`;
-- `docs/**/*.md` and documentation assets;
+- documentation pages and assets;
 - `README.md`, `CONTRIBUTING.md`, `SECURITY.md`, changelog/release notes;
-- GitHub Action metadata such as `action.yml` / `action.yaml`;
-- JSON/YAML schemas and configuration definitions;
-- representative implementation code and tests;
-- CI workflows that build, lint, or publish documentation.
+- `action.yml` / `action.yaml`, schemas, configuration definitions, implementation code, and tests;
+- CI workflows that build, validate, or publish documentation.
 
-Map documentation claims to their likely sources of truth before judging accuracy.
+Map important documentation claims to likely sources of truth. Reuse verified evidence already gathered in the current session rather than repeating identical mechanical checks.
 
-### 3. Choose direct or parallel review mode
+### 3. Select and announce review mode
 
-Choose the review mode explicitly before substantive review work and state it to the user in one short sentence, including the reason. For example: `Review mode: parallel — this is a full-site review with several independent review dimensions.` Do not expose internal agent identities.
+Before substantive review work, state one short mode line to the user:
 
-When the host provides subagents, use parallel review by default for any broad/full-site review, multi-area documentation PR, or other scope where at least three independent review dimensions are materially relevant. A small page count alone does not make a full-site review narrow.
+```text
+Review mode: parallel — full-site review with independent review dimensions.
+```
 
-Fresh evidence already gathered by the coordinator, including recent edits, earlier source-of-truth checks, or mechanical validation from the same session, may be reused in the shared review brief and may reduce duplicate work. It does **not** replace independent specialist perspectives and is not, by itself, a reason to downgrade a broad review to direct mode.
+or:
 
-Before fan-out, perform a shallow orientation pass and create one shared review brief so subagents do not all rediscover the repository independently. Then launch the independent specialists in the same parallel wave.
+```text
+Review mode: direct — narrow single-page/configuration review.
+```
 
-For broad reviews, the default specialist set is:
+#### Mandatory parallel mode
 
-1. technical truth;
-2. developer journeys and information architecture;
-3. examples and documentation system;
-4. cognitive load;
-5. risk and maintainability when materially relevant.
+When a subagent mechanism is available, **you MUST use parallel review** for any of the following:
 
-Use the orchestration, specialist mandates, numeric confidence contract, deduplication, disagreement handling, and scoring rules in [reference/parallel-review.md](reference/parallel-review.md).
+- a full documentation-site review;
+- a broad review explicitly requested "from different angles";
+- a multi-area documentation PR/review;
+- a scope where at least three independent dimensions are materially relevant, such as technical correctness, developer journeys, examples/MkDocs mechanics, cognitive load, or risk/maintainability.
 
-Work directly only when the request is genuinely narrow, such as a simple single-page, single-setting, or tightly sequential review where delegation overhead is likely to exceed the benefit. If subagents are unavailable for a broad review, perform the same specialist passes sequentially and say that parallel execution was unavailable. Do not silently override the broad-review fan-out rule because the coordinator is already familiar with the repository.
+A small page count does not exempt a full-site review. Recent edits, successful builds, earlier source checks, or coordinator familiarity do not exempt it either. Those are reusable evidence for the shared brief, not independent perspectives.
 
-The coordinator remains responsible for the final answer. Never paste or concatenate raw subagent reports as the review.
+Do not silently downgrade a qualifying review to direct mode.
 
-### 4. Validate the site mechanically when practical
+#### Explicit specialist invocation
 
-Prefer repository-provided commands first (`make`, `just`, `tox`, `nox`, `uv`, `poetry`, project scripts, CI commands).
+For a qualifying broad review, do **not** rely on automatic delegation. Explicitly launch the required specialists in the same parallel wave.
 
-If MkDocs is already available and no project-specific command supersedes it, run:
+When installed as the Claude Code plugin, invoke these plugin agents:
+
+1. `documentation-reviewer:technical-truth-reviewer`
+2. `documentation-reviewer:developer-journey-reviewer`
+3. `documentation-reviewer:docs-system-reviewer`
+4. `documentation-reviewer:cognitive-load-reviewer`
+
+Also invoke `documentation-reviewer:risk-maintainability-reviewer` when security, accessibility, compatibility, or long-term maintainability is materially relevant.
+
+Give every specialist the same factual shared brief plus its distinct mandate. Do not ask every specialist to rerun the same build or rediscover the entire repository.
+
+If the named plugin agents are unavailable but the host provides general-purpose subagents, explicitly launch equivalent independent subagents with the mandates in [reference/parallel-review.md](reference/parallel-review.md). If the host provides no subagents, perform the same passes sequentially and state that parallel execution was unavailable.
+
+Direct mode is appropriate only for genuinely narrow work such as one short page, one broken link, one `mkdocs.yml` setting, or a tightly sequential question. A user request to avoid subagents also overrides parallel mode.
+
+The coordinator owns the final review. Never paste raw specialist reports into the answer.
+
+### 4. Validate mechanically when practical
+
+Prefer the repository's own documentation command first (`make`, `just`, `tox`, `nox`, project scripts, or CI-equivalent commands).
+
+If MkDocs is already available and no project command supersedes it, run:
 
 ```bash
 mkdocs build --strict
 ```
 
-Do not install packages, rewrite lockfiles, or change the environment unless the user asked for that. If a build cannot be run, record the limitation rather than guessing.
+Do not install packages, rewrite lockfiles, or change the environment unless asked. If a build cannot run, record the limitation.
 
-In parallel mode, assign expensive/shared mechanical checks to one specialist or the coordinator rather than running the same build in every subagent.
+In parallel mode, assign shared mechanical checks to one specialist or the coordinator rather than repeating them in every workstream.
 
-### 5. Review information architecture, page purpose, and cognitive load
+### 5. Review information architecture and page purpose
 
 Classify content by reader need:
 
 - learning/tutorial;
 - task-oriented how-to;
 - technical reference;
-- explanation/concepts.
+- explanation/concepts;
+- landing/overview, troubleshooting, and FAQ when useful.
 
-Also recognize landing/overview, troubleshooting, and FAQ content where those forms are useful.
+A site does not need literal top-level sections for every type. Judge whether important reader needs have an obvious home and whether navigation reflects developer intent.
 
-A site does not need literal top-level sections for each type, but each important reader need should have an obvious home. Flag navigation that exposes implementation structure while hiding common developer workflows.
+Use:
 
-For the full rubric, read [reference/review-rubric.md](reference/review-rubric.md).
-
-For page-level expectations, read [reference/page-type-checks.md](reference/page-type-checks.md).
-
-For cognitive-load checks, read [reference/cognitive-load-review.md](reference/cognitive-load-review.md).
-
-For MkDocs-specific checks, read [reference/mkdocs-review.md](reference/mkdocs-review.md).
+- [reference/review-rubric.md](reference/review-rubric.md) for the weighted review;
+- [reference/page-type-checks.md](reference/page-type-checks.md) for page-level contracts;
+- [reference/cognitive-load-review.md](reference/cognitive-load-review.md) for avoidable mental effort;
+- [reference/mkdocs-review.md](reference/mkdocs-review.md) for MkDocs/Material checks;
+- [reference/parallel-review.md](reference/parallel-review.md) for specialist orchestration and merging.
 
 ### 6. Trace critical developer journeys
 
-At minimum, test these journeys when relevant:
+When relevant, test:
 
-1. **First success**: Can a new developer understand the purpose, prerequisites, install/setup, run a minimal example, and verify success without guessing?
-2. **Common task**: Can an experienced developer quickly find and complete the most frequent real-world workflow?
-3. **Configuration/reference lookup**: Can a developer find exact options, defaults, required/optional status, types, constraints, and examples?
-4. **Failure recovery**: Can a developer diagnose a likely error from symptoms/logs and find a concrete resolution?
-5. **Upgrade/change**: Can a developer determine compatibility, breaking changes, deprecations, or version-specific behavior when that matters?
+1. **First success**: purpose, prerequisites, setup, minimal example, observable success.
+2. **Common task**: fast path to a frequent real-world workflow.
+3. **Reference lookup**: exact options, defaults, types, constraints, outputs, and examples.
+4. **Failure recovery**: symptom/error to diagnosis, fix, and verification.
+5. **Upgrade/change**: compatibility, breaking changes, deprecations, version-specific behavior.
 
-For important pages in each journey, identify the page's job and apply the matching page-type contract rather than using one generic checklist everywhere.
+For each important page, apply its page-type contract rather than one generic checklist.
 
-Also trace avoidable cognitive burden: how much must the developer remember, infer, reconcile, backtrack, or decide before taking the next correct action? Do not penalize necessary domain complexity.
+Also trace cognitive burden: what must the developer remember, infer, reconcile, backtrack, or decide before the next correct action? Do not penalize necessary domain complexity.
 
-### 7. Cross-check examples, reference material, and authored syntax
+### 7. Cross-check examples and authored syntax
 
-For every important example or reference page sampled:
+For important examples/reference material:
 
-- compare names, inputs, defaults, outputs, permissions, and constraints with source-of-truth files;
-- verify placeholders are obvious and examples contain enough context to copy safely;
-- check that success criteria or expected output are stated where useful;
-- verify internal links and referenced paths exist before accepting or recommending them;
-- when non-standard MkDocs/Material syntax is used, verify the active `mkdocs.yml` enables the required extension or theme support;
-- flag stale, impossible, insecure, unsupported-rendering, or contradictory examples with high priority;
-- prefer generated or source-derived reference material when manual duplication is likely to drift.
+- compare names, defaults, inputs, outputs, permissions, and constraints with sources of truth;
+- verify placeholders and surrounding context are sufficient to copy safely;
+- verify success criteria where useful;
+- verify internal links and referenced paths exist;
+- verify non-standard MkDocs/Material syntax is enabled by the active configuration;
+- flag stale, impossible, insecure, unsupported-rendering, or contradictory examples;
+- prefer generated/source-derived reference material where manual duplication is likely to drift.
 
-### 8. Merge, verify, score, and prioritize
+### 8. Merge and verify specialist findings
 
-In parallel mode, merge candidate findings before scoring:
+In parallel mode, wait for all required specialist workstreams to return or fail before final synthesis.
 
-- deduplicate findings that share one root cause;
-- use independent corroboration to raise confidence only after verification, not severity;
-- resolve disagreements against primary source-of-truth evidence;
-- mark unresolved claims as unverified instead of inventing certainty;
-- independently verify the decisive evidence for every Critical and High finding;
+Then:
+
+- normalize candidate findings into one format;
+- deduplicate findings with the same root cause;
+- treat independent corroboration as higher confidence, not higher severity;
+- resolve factual disagreements against primary source-of-truth evidence;
+- mark unresolved claims unverified rather than inventing certainty;
+- independently verify decisive evidence for every Critical and High finding;
 - require final confidence of at least 80/100 for Critical and High findings;
-- compute one final rubric score only after the merged finding set is stable.
+- omit weak taste-based Medium/Low findings;
+- compute one rubric score only after the merged finding set is stable.
 
-In direct mode, apply the same evidence and confidence discipline.
+Cognitive load is cross-cutting, not a separate weighted score. Map a validated load hotspot to the rubric category whose developer impact it explains and do not deduct twice for one root cause.
 
-Score the site using the weighted rubric in `reference/review-rubric.md`. A numerical score is a summary, not a substitute for findings.
+Severity:
 
-Cognitive load is a cross-cutting diagnostic, not a separate score. Map each validated load hotspot to the rubric category whose developer impact it explains and do not deduct twice for the same root cause.
+- **Critical**: unsafe or materially wrong guidance with severe consequences.
+- **High**: blocks or seriously impairs a primary journey or makes core reference unreliable.
+- **Medium**: recurring friction, ambiguity, poor findability, avoidable cognitive burden, or maintenance risk.
+- **Low**: limited-impact polish or consistency issue.
 
-Use severities:
-
-- **Critical**: materially incorrect or unsafe guidance likely to cause broken deployments, data/security risk, or severe user harm.
-- **High**: blocks or seriously impairs a primary developer journey, or makes core reference unreliable.
-- **Medium**: creates recurring friction, ambiguity, poor findability, avoidable cognitive burden, or maintenance risk.
-- **Low**: polish or consistency improvement with limited impact.
-
-Do not mark a missing optional page as High merely because a framework recommends it. Tie severity to actual user impact.
-
-### 9. Produce an actionable review
+### 9. Produce one actionable review
 
 Use this order:
 
-1. **Verdict**: 2-5 sentences on whether developers can successfully use and trust the docs.
-2. **Top findings**: Critical and High issues first, each with evidence and a concrete fix.
+1. **Verdict**: whether developers can successfully use and trust the docs.
+2. **Top findings**: Critical and High first, each with evidence and a concrete fix.
 3. **Scorecard**: category scores and total out of 100.
 4. **Coverage gaps**: missing or weak journeys/content types.
-5. **Cognitive-load hotspots**: include only meaningful, evidence-backed hotspots that are not already obvious from the top findings.
-6. **MkDocs observations**: navigation, search, build validation, versioning, edit links, accessibility, and maintainability.
-7. **Suggested next structure**: only if information architecture needs improvement.
-8. **Validation limits**: commands or checks that could not be run, including failed/unavailable specialist workstreams when relevant.
+5. **Cognitive-load hotspots**: only meaningful hotspots not already obvious from top findings.
+6. **MkDocs observations**: navigation, search, build validation, edit links, accessibility, reproducibility, maintainability.
+7. **Suggested next structure**: only when information architecture materially needs improvement.
+8. **Validation limits**: checks that could not run and any required specialist workstream that failed/unavailable.
 
-For each finding include:
+Finding format:
 
 ```text
 [Severity] Short title
@@ -181,10 +199,8 @@ Impact: why this matters to a developer
 Fix: the smallest concrete improvement that resolves the issue
 ```
 
-When line numbers are unavailable, use the most precise heading or file reference possible.
-
-Do not expose internal agent identities or present the final review as a collection of specialist transcripts. The final output should be one coherent, evidence-backed assessment.
+Do not expose specialist transcripts or internal agent identities in the final review. Present one coherent, evidence-backed assessment.
 
 ## Review stance
 
-Prefer a small set of consequential findings over an encyclopedia of preferences. A strong review should make the next documentation change obvious.
+Prefer a small set of consequential findings over an encyclopedia of preferences. A strong review makes the next documentation change obvious.
