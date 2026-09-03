@@ -48,7 +48,11 @@ Map documentation claims to their likely sources of truth before judging accurac
 
 ### 3. Choose direct or parallel review mode
 
-For a substantial review, use parallel subagents when the host provides them and the work can be split into independent review dimensions. Do this by default for broad/full-site reviews, multi-area documentation PRs, or other scopes where at least three specialist perspectives are materially useful.
+Choose the review mode explicitly before substantive review work and state it to the user in one short sentence, including the reason. For example: `Review mode: parallel — this is a full-site review with several independent review dimensions.` Do not expose internal agent identities.
+
+When the host provides subagents, use parallel review by default for any broad/full-site review, multi-area documentation PR, or other scope where at least three independent review dimensions are materially relevant. A small page count alone does not make a full-site review narrow.
+
+Fresh evidence already gathered by the coordinator, including recent edits, earlier source-of-truth checks, or mechanical validation from the same session, may be reused in the shared review brief and may reduce duplicate work. It does **not** replace independent specialist perspectives and is not, by itself, a reason to downgrade a broad review to direct mode.
 
 Before fan-out, perform a shallow orientation pass and create one shared review brief so subagents do not all rediscover the repository independently. Then launch the independent specialists in the same parallel wave.
 
@@ -62,7 +66,7 @@ For broad reviews, the default specialist set is:
 
 Use the orchestration, specialist mandates, numeric confidence contract, deduplication, disagreement handling, and scoring rules in [reference/parallel-review.md](reference/parallel-review.md).
 
-Do **not** fan out for a simple single-page, single-setting, or tightly sequential review where delegation overhead is likely to exceed the benefit. If subagents are unavailable, perform the same specialist passes sequentially and merge them using the same rules.
+Work directly only when the request is genuinely narrow, such as a simple single-page, single-setting, or tightly sequential review where delegation overhead is likely to exceed the benefit. If subagents are unavailable for a broad review, perform the same specialist passes sequentially and say that parallel execution was unavailable. Do not silently override the broad-review fan-out rule because the coordinator is already familiar with the repository.
 
 The coordinator remains responsible for the final answer. Never paste or concatenate raw subagent reports as the review.
 
