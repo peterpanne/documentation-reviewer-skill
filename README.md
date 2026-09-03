@@ -16,20 +16,61 @@ The reviewer focuses on problems that matter to developers, not cosmetic nitpick
 - dedicated **cognitive-load analysis** for avoidable mental effort;
 - MkDocs and Material-specific checks for navigation, extensions, rendering, CI, links, and reproducibility.
 
-For broad reviews, the Claude Code plugin includes specialist agents that review the documentation independently from different angles and then feed one coordinated final assessment.
+For broad reviews, Claude Code can use dedicated specialist agents to review the documentation independently from different angles and feed one coordinated final assessment.
 
 ## Quick start
 
-### Claude Code: recommended
+### Recommended: install with GitHub CLI
 
-Install the native plugin to get both the skill **and the bundled specialist agents**:
+The preferred installation method is GitHub CLI's portable `gh skill` support.
+
+Install the skill for Claude Code in the current project:
 
 ```bash
-claude plugin marketplace add peterpanne/documentation-reviewer-skill
-claude plugin install documentation-reviewer@documentation-reviewer-skill
+gh skill install peterpanne/documentation-reviewer-skill \
+  reviewing-developer-documentation \
+  --agent claude-code
 ```
 
-Then ask:
+The skill includes an explicit helper for installing the five Claude Code reviewer agents. Locate the installed skill and run the helper:
+
+```bash
+SKILL_DIR="$(gh skill list \
+  --agent claude-code \
+  --scope project \
+  --json skillName,path \
+  --jq '.[] | select(.skillName == "reviewing-developer-documentation") | .path' \
+  | head -n 1)"
+
+bash "$SKILL_DIR/scripts/install-claude-agents.sh"
+```
+
+On PowerShell:
+
+```powershell
+$SkillDir = gh skill list `
+  --agent claude-code `
+  --scope project `
+  --json skillName,path `
+  --jq '.[] | select(.skillName == "reviewing-developer-documentation") | .path' |
+  Select-Object -First 1
+
+& "$SkillDir/scripts/install-claude-agents.ps1"
+```
+
+The helper installs these Claude agents into the current project's `.claude/agents/` directory:
+
+```text
+technical-truth-reviewer
+developer-journey-reviewer
+docs-system-reviewer
+cognitive-load-reviewer
+risk-maintainability-reviewer
+```
+
+The helper uses the version recorded by `gh skill`, so the skill and agent definitions stay aligned. It refuses to overwrite existing agent files unless you explicitly pass `--force` or `-Force`.
+
+Then ask Claude Code:
 
 ```text
 Review all developer documentation in this repository.
@@ -37,23 +78,11 @@ Focus on the main user journeys, technical accuracy, and avoidable cognitive loa
 Do not change files.
 ```
 
-For a full-site review, the skill explicitly launches the specialist reviewers in parallel when subagents are available. It does not rely on Claude deciding by itself whether delegation is worthwhile.
+For a full-site review, the skill explicitly launches the required specialist reviewers in parallel when subagents are available.
 
-### Other AI coding tools
+### User-scope installation
 
-The repository also follows the portable `skills/<skill-name>/SKILL.md` layout and can be installed with GitHub CLI's `gh skill` support:
-
-```bash
-gh skill install peterpanne/documentation-reviewer-skill \
-  reviewing-developer-documentation \
-  --agent <agent-id>
-```
-
-Run `gh skill install --help` to see the agent IDs supported by your GitHub CLI version.
-
-Portable installations use the target tool's own subagent/worker mechanism when available. The five named Claude Code plugin agents described below are specific to the native Claude plugin installation.
-
-To install the portable skill for your user account instead of only the current project:
+To make the skill available across projects:
 
 ```bash
 gh skill install peterpanne/documentation-reviewer-skill \
@@ -62,11 +91,74 @@ gh skill install peterpanne/documentation-reviewer-skill \
   --scope user
 ```
 
-Update a `gh skill` installation with:
+Then install the Claude agents at user scope:
+
+```bash
+SKILL_DIR="$(gh skill list \
+  --agent claude-code \
+  --scope user \
+  --json skillName,path \
+  --jq '.[] | select(.skillName == "reviewing-developer-documentation") | .path' \
+  | head -n 1)"
+
+bash "$SKILL_DIR/scripts/install-claude-agents.sh" --scope user
+```
+
+PowerShell uses the same flow with `-Scope user`.
+
+### Other AI coding tools
+
+The skill follows the portable `skills/<skill-name>/SKILL.md` layout and can be installed for other supported coding agents:
+
+```bash
+gh skill install peterpanne/documentation-reviewer-skill \
+  reviewing-developer-documentation \
+  --agent <agent-id>
+```
+
+Examples include GitHub Copilot, Cursor, Codex, Gemini CLI, OpenCode, and many others. Run:
+
+```bash
+gh skill install --help
+```
+
+for the agent IDs supported by your installed GitHub CLI version.
+
+The portable skill adapts to the target tool's own subagent/worker mechanism when available. The helper scripts above are specifically for Claude Code's `.claude/agents` system.
+
+### Updating
+
+Update the skill with:
 
 ```bash
 gh skill update reviewing-developer-documentation
 ```
+
+If you installed the Claude agents with the helper, rerun it with overwrite enabled so the agents match the updated skill:
+
+```bash
+SKILL_DIR="$(gh skill list \
+  --agent claude-code \
+  --scope project \
+  --json skillName,path \
+  --jq '.[] | select(.skillName == "reviewing-developer-documentation") | .path' \
+  | head -n 1)"
+
+bash "$SKILL_DIR/scripts/install-claude-agents.sh" --force
+```
+
+For user scope, add `--scope user`. PowerShell users can run the `.ps1` helper with `-Force`.
+
+### Alternative: native Claude Code plugin
+
+If you prefer Claude Code's native plugin system, it still installs the skill and bundled agents together:
+
+```bash
+claude plugin marketplace add peterpanne/documentation-reviewer-skill
+claude plugin install documentation-reviewer@documentation-reviewer-skill
+```
+
+With the plugin installation, the agents appear under scoped names such as `documentation-reviewer:technical-truth-reviewer`.
 
 ## What the reviewer checks
 
@@ -128,17 +220,7 @@ A full-site or broad review uses four required independent specialists:
 
 A fifth **risk and maintainability** reviewer is added when security, accessibility, compatibility, or long-term maintenance is materially relevant.
 
-The plugin ships these as named Claude Code agents:
-
-```text
-documentation-reviewer:technical-truth-reviewer
-documentation-reviewer:developer-journey-reviewer
-documentation-reviewer:docs-system-reviewer
-documentation-reviewer:cognitive-load-reviewer
-documentation-reviewer:risk-maintainability-reviewer
-```
-
-For qualifying broad reviews, the skill explicitly invokes the required agents concurrently. Recent edits, a small page count, or an already-passing MkDocs build are not reasons to skip independent review. Fresh evidence is reused in the shared brief so agents do not repeat unnecessary work.
+For qualifying broad reviews, the skill explicitly invokes the available named agents concurrently. Recent edits, a small page count, or an already-passing MkDocs build are not reasons to skip independent review. Fresh evidence is reused in the shared brief so agents do not repeat unnecessary work.
 
 The coordinator then:
 
@@ -193,28 +275,6 @@ A useful review answers:
 2. **Why does it matter to a developer?**
 3. **What is the smallest useful fix?**
 
-## Manual Claude Code skill installation
-
-If you only want the skill and not the plugin-provided specialist agents, copy:
-
-```text
-skills/reviewing-developer-documentation/
-```
-
-into a project as:
-
-```text
-.claude/skills/reviewing-developer-documentation/
-```
-
-or into your personal skill directory:
-
-```text
-~/.claude/skills/reviewing-developer-documentation/
-```
-
-For the bundled named agents, use the native plugin installation shown in **Quick start**.
-
 ## For maintainers
 
 Validate portable skill metadata with:
@@ -240,6 +300,9 @@ agents/
 skills/
 └── reviewing-developer-documentation/
     ├── SKILL.md
+    ├── scripts/
+    │   ├── install-claude-agents.ps1
+    │   └── install-claude-agents.sh
     └── reference/
         ├── cognitive-load-review.md
         ├── mkdocs-review.md
