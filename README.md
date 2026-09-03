@@ -2,37 +2,26 @@
 
 A portable AI coding skill for reviewing **developer-facing software documentation**, with first-class support for **MkDocs** and **Material for MkDocs**.
 
-Use it to find documentation problems that make developers fail, guess, backtrack, or lose trust: incorrect examples, missing prerequisites, weak task guidance, confusing navigation, stale reference material, unsupported MkDocs syntax, excessive cognitive load, and more.
+It focuses on problems that make developers fail, guess, backtrack, or lose trust: incorrect examples, missing prerequisites, stale reference material, confusing navigation, unsupported MkDocs syntax, excessive cognitive load, and similar high-impact issues.
 
-## What you get
+## What it reviews
 
-The reviewer focuses on problems that matter to developers, not cosmetic nitpicks. A review produces:
+- technical correctness against implementation, schemas, tests, `action.yml`, and configuration;
+- first success, common tasks, reference lookup, troubleshooting, and upgrades;
+- information architecture, navigation, terminology, and cognitive load;
+- copyable examples with clear verification;
+- MkDocs/Material configuration, links, extensions, rendering, CI, and reproducibility;
+- security, accessibility, compatibility, and maintainability when relevant.
 
-- prioritized **Critical / High / Medium / Low** findings;
-- evidence tied to documentation and source-of-truth files;
-- concrete fixes instead of vague advice;
-- a weighted **100-point documentation scorecard**;
-- coverage of onboarding, common tasks, reference, troubleshooting, accessibility, security, and maintainability;
-- dedicated **cognitive-load analysis** for avoidable mental effort;
-- MkDocs and Material-specific checks for navigation, extensions, rendering, CI, links, and reproducibility.
+Reviews return prioritized **Critical / High / Medium / Low** findings, concrete fixes, and a weighted 100-point scorecard.
 
-For broad reviews, Claude Code can use dedicated specialist agents to review the documentation independently from different angles and feed one coordinated final assessment.
+## Install
 
-## Quick start
+### Claude Code with `gh skill` (recommended)
 
-### Recommended: install with GitHub CLI
+The Claude-agent helper requires **GitHub CLI 2.99.0+**.
 
-The preferred installation method is GitHub CLI's portable `gh skill` support.
-
-The Claude-agent helper requires **GitHub CLI 2.99.0 or newer**, because it uses `gh skill list` to resolve the installed skill path and version.
-
-Check your version:
-
-```bash
-gh version
-```
-
-Install the skill for Claude Code in the current project:
+Install the skill into the current project:
 
 ```bash
 gh skill install peterpanne/documentation-reviewer-skill \
@@ -40,7 +29,7 @@ gh skill install peterpanne/documentation-reviewer-skill \
   --agent claude-code
 ```
 
-Then install the five Claude Code reviewer agents:
+Install the five Claude Code reviewer agents:
 
 ```bash
 gh api \
@@ -49,7 +38,24 @@ gh api \
   | bash
 ```
 
-On PowerShell:
+The helper uses `gh skill list` internally to locate the installed skill, resolve its version, and install matching agents into the corresponding `.claude/agents/` directory.
+
+For a user-scoped installation, add `--scope user` to both steps:
+
+```bash
+gh skill install peterpanne/documentation-reviewer-skill \
+  reviewing-developer-documentation \
+  --agent claude-code \
+  --scope user
+
+gh api \
+  repos/peterpanne/documentation-reviewer-skill/contents/skills/reviewing-developer-documentation/scripts/install-claude-agents.sh \
+  -H "Accept: application/vnd.github.raw+json" \
+  | bash -s -- --scope user
+```
+
+<details>
+<summary>PowerShell agent installer</summary>
 
 ```powershell
 $Installer = gh api `
@@ -59,71 +65,13 @@ $Installer = gh api `
 $Installer | pwsh -NoProfile -Command -
 ```
 
-You do **not** need to find the installed skill directory yourself. The helper runs `gh skill list` internally to:
+Pass `-Scope user` for a user-scoped installation.
 
-- find the installed `reviewing-developer-documentation` skill;
-- determine project vs. user scope;
-- resolve the installed skill path and version;
-- derive the matching Claude Code `agents/` directory;
-- fetch agent definitions from the same skill version.
-
-For the default project-scope Claude Code installation, the agents are installed into `.claude/agents/`.
-
-The installed agents are:
-
-```text
-technical-truth-reviewer
-developer-journey-reviewer
-docs-system-reviewer
-cognitive-load-reviewer
-risk-maintainability-reviewer
-```
-
-The helper refuses to overwrite existing agent files unless you explicitly pass `--force` or `-Force`.
-
-Then ask Claude Code:
-
-```text
-Review all developer documentation in this repository.
-Focus on the main user journeys, technical accuracy, and avoidable cognitive load.
-Do not change files.
-```
-
-For a full-site review, the skill explicitly launches the required specialist reviewers in parallel when subagents are available.
-
-### User-scope installation
-
-To make the skill available across projects:
-
-```bash
-gh skill install peterpanne/documentation-reviewer-skill \
-  reviewing-developer-documentation \
-  --agent claude-code \
-  --scope user
-```
-
-Then install the Claude agents at user scope:
-
-```bash
-gh api \
-  repos/peterpanne/documentation-reviewer-skill/contents/skills/reviewing-developer-documentation/scripts/install-claude-agents.sh \
-  -H "Accept: application/vnd.github.raw+json" \
-  | bash -s -- --scope user
-```
-
-On PowerShell:
-
-```powershell
-$Installer = gh api `
-  repos/peterpanne/documentation-reviewer-skill/contents/skills/reviewing-developer-documentation/scripts/install-claude-agents.ps1 `
-  -H "Accept: application/vnd.github.raw+json"
-
-$Installer | pwsh -NoProfile -Command - -Scope user
-```
+</details>
 
 ### Other AI coding tools
 
-The skill follows the portable `skills/<skill-name>/SKILL.md` layout and can be installed for other supported coding agents:
+Install the portable skill for any agent supported by your GitHub CLI:
 
 ```bash
 gh skill install peterpanne/documentation-reviewer-skill \
@@ -131,25 +79,26 @@ gh skill install peterpanne/documentation-reviewer-skill \
   --agent <agent-id>
 ```
 
-Examples include GitHub Copilot, Cursor, Codex, Gemini CLI, OpenCode, and many others. Run:
+Run `gh skill install --help` for the available agent IDs. Non-Claude hosts use their own subagent/worker mechanism when available.
+
+### Alternative: native Claude Code plugin
 
 ```bash
-gh skill install --help
+claude plugin marketplace add peterpanne/documentation-reviewer-skill
+claude plugin install documentation-reviewer@documentation-reviewer-skill
 ```
 
-for the agent IDs supported by your installed GitHub CLI version.
+The plugin bundles the skill and all five Claude Code agents in one install.
 
-The portable skill adapts to the target tool's own subagent/worker mechanism when available. The helper scripts above are specifically for Claude Code's `.claude/agents` system.
+## Update skill + agents
 
-### Updating
-
-Update the skill with:
+Update the installed skill first:
 
 ```bash
-gh skill update reviewing-developer-documentation
+gh skill update reviewing-developer-documentation --all
 ```
 
-If you installed the Claude agents with the helper, rerun the helper with overwrite enabled so the agents match the updated skill:
+Then refresh the Claude Code agents so they match the updated skill:
 
 ```bash
 gh api \
@@ -158,7 +107,7 @@ gh api \
   | bash -s -- --force
 ```
 
-For user scope:
+For user-scoped Claude agents:
 
 ```bash
 gh api \
@@ -167,172 +116,75 @@ gh api \
   | bash -s -- --scope user --force
 ```
 
-PowerShell users can stream the `.ps1` helper as above and pass `-Force` (and `-Scope user` when needed).
+PowerShell users can rerun the `.ps1` installer with `-Force` and, when needed, `-Scope user`.
 
-### Alternative: native Claude Code plugin
-
-If you prefer Claude Code's native plugin system, it still installs the skill and bundled agents together:
-
-```bash
-claude plugin marketplace add peterpanne/documentation-reviewer-skill
-claude plugin install documentation-reviewer@documentation-reviewer-skill
-```
-
-With the plugin installation, the agents appear under scoped names such as `documentation-reviewer:technical-truth-reviewer`.
-
-## What the reviewer checks
-
-### Can developers trust the docs?
-
-The reviewer cross-checks important claims against likely sources of truth such as implementation code, tests, schemas, `action.yml`, configuration definitions, and released behavior.
-
-It looks for stale defaults, wrong flags, invalid commands, incorrect examples, missing permissions, contradictory pages, unsupported versions, and claims that cannot be verified.
-
-### Can developers complete real tasks?
-
-The review traces important journeys such as:
-
-- first successful setup;
-- common day-to-day tasks;
-- configuration and reference lookup;
-- failure recovery and troubleshooting;
-- upgrades, compatibility, and version changes.
-
-Pages are judged by their purpose. A how-to is reviewed differently from a reference page, tutorial, explanation, troubleshooting page, or landing page.
-
-### Is the documentation easy to think through?
-
-A dedicated cognitive-load pass checks for avoidable mental effort, including:
-
-- hidden or distant prerequisites;
-- too many unexplained choices before the main task;
-- information scattered across several pages;
-- forward references and poorly sequenced concepts;
-- inconsistent terminology;
-- examples that make developers mentally combine incomplete fragments;
-- tabs, diagrams, tables, or admonitions that add complexity instead of reducing it.
-
-The reviewer distinguishes **real product complexity** from complexity introduced by the documentation.
-
-### Does the MkDocs site support the authored content?
-
-For MkDocs and Material for MkDocs projects, the skill checks areas such as:
-
-- `mkdocs.yml` navigation and site metadata;
-- search and repository/edit integration;
-- Markdown extensions and Material syntax compatibility;
-- internal links and anchors;
-- code examples and fenced-block configuration;
-- strict builds and documentation CI;
-- dependency reproducibility;
-- accessibility of authored content and custom components.
-
-It does not recommend Material features simply because they exist. Features should solve a reader or maintenance problem.
-
-## Parallel review in Claude Code
-
-A full-site or broad review uses four required independent specialists:
-
-1. **Technical truth**: implementation/source alignment, defaults, commands, schemas, compatibility.
-2. **Developer journeys**: onboarding, common tasks, troubleshooting, navigation, findability.
-3. **Examples and docs system**: examples, links, MkDocs configuration, Material syntax, CI/build behavior.
-4. **Cognitive load**: working-memory burden, unclear choices, context switching, terminology, sequencing.
-
-A fifth **risk and maintainability** reviewer is added when security, accessibility, compatibility, or long-term maintenance is materially relevant.
-
-For qualifying broad reviews, the skill explicitly invokes the available named agents concurrently. Recent edits, a small page count, or an already-passing MkDocs build are not reasons to skip independent review. Fresh evidence is reused in the shared brief so agents do not repeat unnecessary work.
-
-The coordinator then:
-
-- deduplicates overlapping findings;
-- resolves disagreements against primary evidence;
-- treats multiple detections as increased confidence, not increased severity;
-- independently verifies Critical and High findings;
-- creates one final scorecard after the merged finding set is stable.
-
-Small, genuinely narrow reviews stay in direct mode instead of paying multi-agent overhead.
-
-## Example prompts
+## Usage
 
 ```text
-Review all developer documentation in this repository and give me the highest-impact improvements first.
+Review all developer documentation in this repository.
+Focus on the main user journeys, technical accuracy, and avoidable cognitive load.
+Do not change files.
+```
+
+Other useful prompts:
+
+```text
+Review this documentation PR and cross-check changed examples against the implementation.
 ```
 
 ```text
-Review the documentation from different angles. Cross-check technical truth, developer journeys, MkDocs behavior, and cognitive load.
-```
-
-```text
-Review this documentation PR. Cross-check changed examples and reference material against the implementation and action metadata.
-```
-
-```text
-Review our getting-started flow specifically for cognitive load. Show where a new developer has to guess, remember too much, or jump between pages.
+Review our getting-started flow specifically for cognitive load.
 ```
 
 ```text
 Review the docs, then implement only the Critical and High findings.
 ```
 
-## Example finding
+## How parallel review works
 
-```text
-[High] Quickstart uses the wrong default deployment mode
+Broad/full-site reviews use four independent specialists when subagents are available:
 
-Where: docs/getting-started.md → "Deploy"
-Evidence: The page says `mode` defaults to `deploy`, while `action.yml` defines the default as `template`.
-Impact: A copied quickstart behaves differently from what the developer is told to expect.
-Fix: Correct the documented default and check the same value in other examples/reference pages.
-```
+1. **Technical truth**: source alignment, commands, defaults, schemas, compatibility.
+2. **Developer journeys**: onboarding, common tasks, troubleshooting, navigation, findability.
+3. **Docs system**: examples, links, MkDocs configuration, Material syntax, CI/build behavior.
+4. **Cognitive load**: working-memory burden, unclear choices, context switching, terminology, sequencing.
+
+A fifth **risk and maintainability** reviewer is added when relevant.
+
+The coordinator launches required reviewers concurrently, deduplicates overlapping findings, resolves disagreements against primary evidence, verifies high-impact findings, and produces one final scorecard. Small, genuinely narrow reviews stay in direct mode.
 
 ## Review philosophy
 
-The skill favors a small number of consequential findings over an encyclopedia of preferences.
+The skill favors a small number of consequential findings over an encyclopedia of preferences. Each finding should answer:
 
-A useful review answers:
+1. What is wrong or unnecessarily difficult?
+2. Why does it matter to a developer?
+3. What is the smallest useful fix?
 
-1. **What is wrong or unnecessarily difficult?**
-2. **Why does it matter to a developer?**
-3. **What is the smallest useful fix?**
+Cognitive load is treated as a cross-cutting diagnostic, not an extra score, so the same root cause is not penalized twice.
 
 ## For maintainers
 
-Validate portable skill metadata with:
+Validate the portable skill metadata with:
 
 ```bash
 gh skill publish --dry-run
 ```
 
-Evaluation scenarios under `evals/` cover source-of-truth drift, developer journeys, page-type behavior, MkDocs rendering, cognitive load, multi-agent fan-out, explicit specialist invocation, confidence filtering, and false-positive resistance.
+Evaluation scenarios live under `evals/` and cover source-of-truth drift, developer journeys, MkDocs rendering, cognitive load, parallel orchestration, confidence filtering, and false-positive resistance.
 
-Repository structure:
+The main implementation lives in:
 
 ```text
-.claude-plugin/
-├── marketplace.json
-└── plugin.json
+skills/reviewing-developer-documentation/
+├── SKILL.md
+├── scripts/
+└── reference/
+
 agents/
-├── cognitive-load-reviewer.md
+├── technical-truth-reviewer.md
 ├── developer-journey-reviewer.md
 ├── docs-system-reviewer.md
-├── risk-maintainability-reviewer.md
-└── technical-truth-reviewer.md
-skills/
-└── reviewing-developer-documentation/
-    ├── SKILL.md
-    ├── scripts/
-    │   ├── install-claude-agents.ps1
-    │   └── install-claude-agents.sh
-    └── reference/
-        ├── cognitive-load-review.md
-        ├── mkdocs-review.md
-        ├── page-type-checks.md
-        ├── parallel-review.md
-        └── review-rubric.md
-evals/
-├── cognitive-load-evals.json
-├── orchestration-evals.json
-└── evals.json
+├── cognitive-load-reviewer.md
+└── risk-maintainability-reviewer.md
 ```
-
-For stronger evaluation, compare representative prompts with and without the skill enabled and repeat across the coding agents or models you intend to support.
