@@ -3,7 +3,6 @@ set -euo pipefail
 
 REPO="peterpanne/documentation-reviewer-skill"
 SKILL_NAME="reviewing-developer-documentation"
-SCOPE="project"
 REF=""
 FORCE=0
 
@@ -19,14 +18,16 @@ usage() {
   cat <<'EOF'
 Install the documentation reviewer's Claude Code subagents.
 
+Run this helper from the copy installed by `gh skill install --agent claude-code`.
+It uses `gh skill list` to resolve the installed skill path and version, then
+installs the agents next to that skill under the matching Claude config root.
+
 Usage:
-  install-claude-agents.sh [--scope project|user] [--ref <git-ref>] [--force]
+  install-claude-agents.sh [--ref <git-ref>] [--force]
 
 Options:
-  --scope   Install into the current project's .claude/agents directory
-            or the user's Claude config directory. Default: project.
   --ref     Fetch agent definitions from a specific tag, branch, or commit.
-            By default the helper uses the version recorded by gh skill.
+            By default the helper uses the version reported by `gh skill list`.
   --force   Overwrite existing agent files.
   -h, --help
             Show this help.
@@ -35,11 +36,6 @@ EOF
 
 while [[ $# -gt 0 ]]; do
   case "$1" in
-    --scope)
-      [[ $# -ge 2 ]] || { echo "Missing value for --scope" >&2; exit 2; }
-      SCOPE="$2"
-      shift 2
-      ;;
     --ref)
       [[ $# -ge 2 ]] || { echo "Missing value for --ref" >&2; exit 2; }
       REF="$2"
@@ -61,40 +57,66 @@ while [[ $# -gt 0 ]]; do
   esac
 done
 
-if [[ "$SCOPE" != "project" && "$SCOPE" != "user" ]]; then
-  echo "--scope must be 'project' or 'user'" >&2
-  exit 2
-fi
-
 command -v gh >/dev/null 2>&1 || {
   echo "GitHub CLI (gh) is required." >&2
   exit 1
 }
 
-if [[ "$SCOPE" == "project" ]]; then
-  PROJECT_ROOT="$(git rev-parse --show-toplevel 2>/dev/null || true)"
-  if [[ -z "$PROJECT_ROOT" ]]; then
-    echo "Project scope requires running inside a Git repository." >&2
-    exit 1
-  fi
-  TARGET_DIR="$PROJECT_ROOT/.claude/agents"
-else
-  CLAUDE_HOME="${CLAUDE_CONFIG_DIR:-$HOME/.claude}"
-  TARGET_DIR="$CLAUDE_HOME/agents"
+if ! gh skill list --help >/dev/null 2>&1; then
+  echo "This helper requires a GitHub CLI version with 'gh skill list' support." >&2
+  echo "Upgrade GitHub CLI and retry." >&2
+  exit 1
 fi
+
+SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd -P)"
+SKILL_DIR="$(cd -- "$SCRIPT_DIR/.." && pwd -P)"
+SKILLS_ROOT="$(dirname -- "$SKILL_DIR")"
+
+ENTRY="$(gh skill list \
+  --dir "$SKILLS_ROOT" \
+  --json skillName,path,version,sourceURL \
+  --jq ".[] | select(.skillName == \"$SKILL_NAME\") | [.path, .version, .sourceURL] | @tsv" \
+  | head -n 1)"
+
+if [[ -z "$ENTRY" ]]; then
+  echo "Could not find '$SKILL_NAME' with gh skill list under:" >&2
+  echo "  $SKILLS_ROOT" >&2
+  echo "Run this helper from the copy installed by gh skill." >&2
+  exit 1
+fi
+
+IFS=$'\t' read -r LISTED_PATH LISTED_VERSION SOURCE_URL <<< "$ENTRY"
+
+if [[ -z "$LISTED_PATH" || "$LISTED_PATH" == "null" ]]; then
+  echo "gh skill list did not return an installed path for '$SKILL_NAME'." >&2
+  exit 1
+fi
+
+LISTED_PATH="$(cd -- "$LISTED_PATH" && pwd -P)"
+if [[ "$LISTED_PATH" != "$SKILL_DIR" ]]; then
+  echo "The running helper does not match the skill entry returned by gh skill list." >&2
+  echo "Helper skill: $SKILL_DIR" >&2
+  echo "Listed skill: $LISTED_PATH" >&2
+  exit 1
+fi
+
+CLAUDE_ROOT="$(dirname -- "$SKILLS_ROOT")"
+TARGET_DIR="$CLAUDE_ROOT/agents"
 
 if [[ -z "$REF" ]]; then
-  REF="$(gh skill list \
-    --agent claude-code \
-    --scope "$SCOPE" \
-    --json skillName,version \
-    --jq ".[] | select(.skillName == \"$SKILL_NAME\") | .version" \
-    | head -n 1 || true)"
+  REF="$LISTED_VERSION"
+fi
+if [[ -z "$REF" || "$REF" == "null" ]]; then
+  echo "gh skill list did not report a version. Pass --ref <tag-or-commit>." >&2
+  exit 1
 fi
 
-if [[ -z "$REF" || "$REF" == "null" ]]; then
-  REF="main"
-  echo "Could not determine the installed skill version; using ref '$REF'." >&2
+if [[ -n "$SOURCE_URL" && "$SOURCE_URL" != "null" ]]; then
+  SOURCE_REPO="${SOURCE_URL#https://github.com/}"
+  SOURCE_REPO="${SOURCE_REPO%.git}"
+  if [[ "$SOURCE_REPO" == */* && "$SOURCE_REPO" != *://* ]]; then
+    REPO="$SOURCE_REPO"
+  fi
 fi
 
 for agent in "${AGENTS[@]}"; do
@@ -133,8 +155,9 @@ cat <<EOF
 Installed ${#AGENTS[@]} Claude Code agents into:
   $TARGET_DIR
 
-Source:
-  $REPO@$REF
+Resolved by gh skill list:
+  skill:   $LISTED_PATH
+  source:  $REPO@$REF
 
 Agents:
 $(printf '  - %s\n' "${AGENTS[@]}")
