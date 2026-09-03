@@ -1,0 +1,43 @@
+[
+  {
+    "name": "reference-heavy-mkdocs-site",
+    "query": "Review this MkDocs documentation for a developer-facing GitHub Action. The nav has Home, Actions Reference, Schemas, and Contributing. Give me the highest-impact improvements.",
+    "expected_behavior": [
+      "Inspects the actual landing/reference content before assuming pages are missing",
+      "Evaluates first-success, common-task, reference, and troubleshooting journeys",
+      "Identifies task-oriented guidance as a likely gap when evidence supports it",
+      "Suggests a compact revised navigation rather than creating taxonomy for its own sake",
+      "Prioritizes findings by developer impact"
+    ]
+  },
+  {
+    "name": "documentation-code-drift",
+    "query": "Review the docs and action.yml. The docs say input 'mode' defaults to deploy, but action.yml defaults it to template.",
+    "expected_behavior": [
+      "Treats action.yml as a source of truth for the Action input",
+      "Reports the mismatch as a high or critical correctness issue depending on impact",
+      "Explains the user impact and names the exact smallest fix",
+      "Checks for the stale default in examples and other reference pages"
+    ]
+  },
+  {
+    "name": "good-small-project",
+    "query": "Review a small MkDocs project whose index page contains a complete quickstart, actions.md is exhaustive and generated from metadata, schemas.md is source-derived, and troubleshooting is a section on index.md because there are only three common errors.",
+    "expected_behavior": [
+      "Does not insist on separate pages merely to match a framework",
+      "Rewards concise information architecture that serves the reader journeys",
+      "Focuses on actual correctness, findability, and maintenance evidence",
+      "Avoids low-value style nitpicking"
+    ]
+  },
+  {
+    "name": "mkdocs-build-quality-gate",
+    "query": "Review mkdocs.yml and docs CI. Several internal links are stale, a nav entry points to a renamed file, and CI runs mkdocs build without strict mode.",
+    "expected_behavior": [
+      "Identifies the broken navigation and links as concrete defects",
+      "Recommends using the project-compatible strict/link validation mechanism",
+      "Does not install or upgrade dependencies during a review without permission",
+      "Separates current breakage from longer-term toolchain maintenance recommendations"
+    ]
+  }
+]
