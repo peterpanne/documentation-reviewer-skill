@@ -2,7 +2,7 @@
 
 Use this workflow for substantial documentation reviews when the host exposes subagents or another mechanism for independent parallel work.
 
-The goal is not to maximize agent count. The goal is to reduce wall-clock time and improve coverage by separating independent review dimensions, while keeping one coordinator responsible for evidence quality, severity, deduplication, and the final verdict.
+The goal is not to maximize agent count. The goal is to reduce wall-clock time and improve coverage by separating independent review dimensions, while keeping one coordinator responsible for evidence quality, severity, confidence, deduplication, and the final verdict.
 
 ## When to fan out
 
@@ -11,7 +11,7 @@ Prefer parallel review when at least three independent review dimensions are mat
 - a full documentation-site review;
 - a documentation PR that changes multiple page types or source-of-truth surfaces;
 - a repository with several actions/APIs/schemas plus task guidance;
-- a review that needs correctness, information architecture, examples, MkDocs mechanics, and risk/maintainability checks.
+- a review that needs correctness, information architecture, examples, cognitive-load analysis, MkDocs mechanics, and risk/maintainability checks.
 
 Work directly instead when the task is small or tightly sequential, for example:
 
@@ -42,7 +42,7 @@ Keep the brief factual. Do not pre-decide findings for the specialists.
 
 ## Default specialist fan-out
 
-For a broad review, launch three or four specialists concurrently. Give each the same shared brief plus one distinct mandate.
+For a broad review, launch four specialists concurrently by default. Add the fifth specialist when security, accessibility, compatibility, or long-term maintenance is materially relevant. Give each the same shared brief plus one distinct mandate.
 
 ### 1. Technical truth reviewer
 
@@ -88,7 +88,27 @@ Review:
 
 Use `mkdocs-review.md` for detailed checks.
 
-### 4. Risk and maintainability reviewer
+### 4. Cognitive-load reviewer
+
+Focus on the amount of information a developer must remember, infer, reconcile, or mentally simulate before taking the next correct action.
+
+Use `cognitive-load-review.md` as the detailed contract.
+
+Review especially:
+
+- working-memory burden from distant prerequisites, forward references, and incomplete fragments;
+- decision load from unexplained alternatives, premature options, and unclear branching criteria;
+- context switching between pages required to complete one primary task;
+- terminology churn or implementation language that forces mental translation;
+- information sequencing, including constraints revealed after the action they qualify;
+- example complexity and whether required versus optional details are distinguishable;
+- structural/visual overload from tabs, admonitions, tables, diagrams, or deeply fragmented sections.
+
+Distinguish intrinsic product/domain complexity from avoidable complexity introduced by the documentation. Do not flag a difficult concept merely because the underlying software is difficult.
+
+Report concrete load hotspots and their likely developer effect. Avoid subjective findings such as "this page feels dense" without evidence from a real task flow.
+
+### 5. Risk and maintainability reviewer
 
 Use this specialist when security, accessibility, compatibility, or long-term maintenance is materially relevant.
 
@@ -115,11 +135,23 @@ Where: file:line, page/heading, or configuration path
 Evidence: exact observed fact and relevant source-of-truth evidence
 Developer impact: concrete effect on a developer
 Suggested fix: smallest useful correction
-Confidence: high | medium | low
+Confidence: 0-100
 Status: verified | unverified
 ```
 
 Also include a short `No issue found` note for important checks that were explicitly examined and passed. This helps the coordinator distinguish coverage from silence.
+
+### Confidence scale
+
+Use confidence independently from severity:
+
+- **0**: false positive or unsupported speculation;
+- **25**: plausible but weakly supported and not verified;
+- **50**: real issue is likely, but evidence or practical impact is limited;
+- **75**: strongly supported and likely to affect developers in practice;
+- **100**: directly confirmed by primary evidence or an unavoidable task-flow failure.
+
+Intermediate scores are allowed. Do not inflate confidence because multiple specialists repeat the same assumption.
 
 Specialists must:
 
@@ -142,18 +174,20 @@ Convert all candidate findings to the common finding format. Remove commentary t
 
 Merge findings that describe the same root cause. Preserve the strongest evidence and the most useful fix.
 
-Independent detection by multiple specialists increases confidence, not severity. Never count the same issue twice in the scorecard.
+Independent detection by multiple specialists may increase confidence after verification, but never severity by itself. Never count the same issue twice in the scorecard.
 
 ### Resolve disagreements
 
-When specialists disagree on a fact, severity, or recommendation:
+When specialists disagree on a fact, severity, confidence, or recommendation:
 
 1. inspect the primary source of truth directly;
 2. prefer verified repository/product evidence over opinion or documentation consensus;
 3. distinguish factual disagreement from prioritization disagreement;
 4. if the evidence remains incomplete, keep the finding as `unverified` and lower confidence rather than inventing certainty.
 
-For Critical and High findings, independently verify the decisive evidence before including them in the final answer. If a host supports cheap narrow delegation, a targeted validation subagent may be used for a disputed high-impact claim; otherwise the coordinator should verify it directly.
+For every Critical and High candidate, independently verify the decisive evidence before including it in the final answer and require final confidence of at least 80. If a host supports cheap narrow delegation, a targeted validation subagent may be used for a disputed high-impact claim; otherwise the coordinator should verify it directly.
+
+For Medium and Low findings, drop weakly supported observations that are primarily taste. Cognitive-load observations below 80 confidence should normally be omitted from scored findings unless they reveal a repeatable pattern worth explicitly recommending for usability testing.
 
 ### Re-evaluate severity
 
@@ -161,7 +195,7 @@ Specialist severities are suggestions. Reassign severity based on the merged evi
 
 - **Critical**: unsafe or materially wrong guidance with severe consequences;
 - **High**: blocks or seriously impairs a primary journey or makes core reference unreliable;
-- **Medium**: recurring friction, ambiguity, poor findability, or maintenance risk;
+- **Medium**: recurring friction, ambiguity, poor findability, avoidable cognitive burden, or maintenance risk;
 - **Low**: limited-impact polish or consistency issue.
 
 Corroboration alone must not inflate severity.
@@ -170,6 +204,8 @@ Corroboration alone must not inflate severity.
 
 Apply `review-rubric.md` only after findings are merged and contradictions resolved. The coordinator computes one scorecard for the documentation set. Never average or sum independent agent scorecards.
 
+Cognitive load is a cross-cutting diagnostic, not an extra scoring category. Map a validated load hotspot to the rubric category whose developer impact it explains, and do not deduct twice for one root cause.
+
 ### Final synthesis
 
 The final review should read as one coherent expert assessment, not as a meeting transcript. Preserve useful diversity of perspective through evidence and coverage, not by labeling findings with agent names.
@@ -177,9 +213,9 @@ The final review should read as one coherent expert assessment, not as a meeting
 ## Efficiency rules
 
 - Launch independent specialists in the same parallel wave whenever the host supports concurrent subagents.
-- Keep specialist mandates non-overlapping enough to avoid four full-repository rescans.
+- Keep specialist mandates non-overlapping enough to avoid multiple full-repository rescans.
 - Give specialists the shared brief and point them at the most relevant paths, while allowing them to follow evidence where necessary.
-- Prefer three strong specialists over many tiny agents.
+- Prefer four focused specialists for a broad review over many tiny agents; add the fifth only when its risk/maintainability mandate is material.
 - Do not ask every specialist to run the same build or expensive validation command. Assign shared mechanical checks to one specialist or the coordinator.
 - Do not block the whole review on a low-impact specialist failure. Record the coverage limitation and continue with verified findings from successful workstreams.
 - If subagents are unavailable, execute the same specialist passes sequentially and use the same merge rules.
