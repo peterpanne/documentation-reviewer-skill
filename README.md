@@ -8,13 +8,13 @@ Use it to find documentation problems that make developers fail, guess, backtrac
 
 A review focuses on the issues that matter to developers, not cosmetic nitpicks. It produces:
 
-- prioritized **Critical / High / Medium / Low** findings;
-- evidence tied to documentation and source-of-truth files;
-- concrete fixes instead of vague advice;
-- a weighted **100-point documentation scorecard**;
-- coverage of onboarding, common tasks, reference, troubleshooting, accessibility, security, and maintainability;
-- dedicated **cognitive-load analysis** for avoidable mental effort;
-- MkDocs and Material-specific checks for navigation, extensions, rendering, CI, links, and reproducibility.
+- prioritized **Critical / High / Medium / Low** findings
+- evidence tied to documentation and source-of-truth files
+- concrete fixes instead of vague advice
+- a weighted **100-point documentation scorecard**
+- coverage of onboarding, common tasks, reference, troubleshooting, accessibility, security, and maintainability
+- dedicated **cognitive-load analysis** for avoidable mental effort
+- MkDocs and Material-specific checks for navigation, extensions, rendering, CI, links, and reproducibility
 
 For larger documentation sets, the skill can automatically fan out parallel specialist reviewers and merge their findings into one verified assessment. Small reviews stay lightweight.
 
@@ -47,25 +47,6 @@ gh skill install peterpanne/documentation-reviewer-skill \
   --agent <agent-id>
 ```
 
-Examples include:
-
-```bash
-# Claude Code
-gh skill install peterpanne/documentation-reviewer-skill reviewing-developer-documentation --agent claude-code
-
-# GitHub Copilot
-gh skill install peterpanne/documentation-reviewer-skill reviewing-developer-documentation --agent github-copilot
-
-# Cursor
-gh skill install peterpanne/documentation-reviewer-skill reviewing-developer-documentation --agent cursor
-
-# Codex
-gh skill install peterpanne/documentation-reviewer-skill reviewing-developer-documentation --agent codex
-
-# Gemini CLI
-gh skill install peterpanne/documentation-reviewer-skill reviewing-developer-documentation --agent gemini-cli
-```
-
 Run `gh skill install --help` to see the agent IDs supported by your installed GitHub CLI version.
 
 To install for your user account instead of only the current project:
@@ -89,11 +70,11 @@ It looks for stale defaults, wrong flags, invalid commands, incorrect examples, 
 
 The review follows important developer journeys such as:
 
-- first successful setup;
-- common day-to-day tasks;
-- configuration and reference lookup;
-- failure recovery and troubleshooting;
-- upgrades, compatibility, and version changes.
+- first successful setup
+- common day-to-day tasks
+- configuration and reference lookup
+- failure recovery and troubleshooting
+- upgrades, compatibility, and version changes
 
 Pages are judged by their purpose. A how-to is reviewed differently from a reference page, tutorial, explanation, troubleshooting page, or landing page.
 
@@ -101,13 +82,13 @@ Pages are judged by their purpose. A how-to is reviewed differently from a refer
 
 A dedicated cognitive-load pass checks for avoidable mental effort, including:
 
-- hidden or distant prerequisites;
-- too many unexplained choices before the main task;
-- information scattered across several pages;
-- forward references and poorly sequenced concepts;
-- inconsistent terminology;
-- examples that make developers mentally combine incomplete fragments;
-- tabs, diagrams, tables, or admonitions that add complexity instead of reducing it.
+- hidden or distant prerequisites
+- too many unexplained choices before the main task
+- information scattered across several pages
+- forward references and poorly sequenced concepts
+- inconsistent terminology
+- examples that make developers mentally combine incomplete fragments
+- tabs, diagrams, tables, or admonitions that add complexity instead of reducing it
 
 The reviewer distinguishes **real product complexity** from complexity introduced by the documentation. A sophisticated system is not penalized merely for being sophisticated.
 
@@ -115,14 +96,14 @@ The reviewer distinguishes **real product complexity** from complexity introduce
 
 For MkDocs and Material for MkDocs projects, the skill checks areas such as:
 
-- `mkdocs.yml` navigation and site metadata;
-- search and repository/edit integration;
-- Markdown extensions and Material syntax compatibility;
-- internal links and anchors;
-- code examples and fenced-block configuration;
-- strict builds and documentation CI;
-- dependency reproducibility;
-- accessibility of authored content and custom components.
+- `mkdocs.yml` navigation and site metadata
+- search and repository/edit integration
+- Markdown extensions and Material syntax compatibility
+- internal links and anchors
+- code examples and fenced-block configuration
+- strict builds and documentation CI
+- dependency reproducibility
+- accessibility of authored content and custom components
 
 It does not recommend Material features simply because they exist. Features should solve a reader or maintenance problem.
 
@@ -132,11 +113,11 @@ The skill adapts the review strategy to the size of the task.
 
 For a small page or narrow configuration question, one reviewer works directly. For a substantial site or documentation PR, the skill can split independent work across specialists for:
 
-- technical truth and source alignment;
-- developer journeys and information architecture;
-- examples and documentation-system behavior;
-- cognitive load;
-- security, accessibility, compatibility, and maintainability when relevant.
+- technical truth and source alignment
+- developer journeys and information architecture
+- examples and documentation-system behavior
+- cognitive load
+- security, accessibility, compatibility, and maintainability when relevant
 
 The coordinator then deduplicates overlapping findings, resolves disagreements against primary evidence, verifies high-impact findings, and creates one final scorecard. Multiple agents finding the same issue increases confidence, not severity.
 
