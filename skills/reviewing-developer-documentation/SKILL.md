@@ -45,7 +45,19 @@ Inspect the repository structure and locate, when present:
 
 Map documentation claims to their likely sources of truth before judging accuracy.
 
-### 3. Validate the site mechanically when practical
+### 3. Choose direct or parallel review mode
+
+For a substantial review, use parallel subagents when the host provides them and the work can be split into independent review dimensions. Do this by default for broad/full-site reviews, multi-area documentation PRs, or other scopes where at least three specialist perspectives are materially useful.
+
+Before fan-out, perform a shallow orientation pass and create one shared review brief so subagents do not all rediscover the repository independently. Then launch the independent specialists in the same parallel wave.
+
+Use the orchestration, specialist mandates, output contract, deduplication, disagreement handling, and scoring rules in [reference/parallel-review.md](reference/parallel-review.md).
+
+Do **not** fan out for a simple single-page, single-setting, or tightly sequential review where delegation overhead is likely to exceed the benefit. If subagents are unavailable, perform the same specialist passes sequentially and merge them using the same rules.
+
+The coordinator remains responsible for the final answer. Never paste or concatenate raw subagent reports as the review.
+
+### 4. Validate the site mechanically when practical
 
 Prefer repository-provided commands first (`make`, `just`, `tox`, `nox`, `uv`, `poetry`, project scripts, CI commands).
 
@@ -57,7 +69,9 @@ mkdocs build --strict
 
 Do not install packages, rewrite lockfiles, or change the environment unless the user asked for that. If a build cannot be run, record the limitation rather than guessing.
 
-### 4. Review information architecture and page purpose
+In parallel mode, assign expensive/shared mechanical checks to one specialist or the coordinator rather than running the same build in every subagent.
+
+### 5. Review information architecture and page purpose
 
 Classify content by reader need:
 
@@ -76,7 +90,7 @@ For page-level expectations, read [reference/page-type-checks.md](reference/page
 
 For MkDocs-specific checks, read [reference/mkdocs-review.md](reference/mkdocs-review.md).
 
-### 5. Trace critical developer journeys
+### 6. Trace critical developer journeys
 
 At minimum, test these journeys when relevant:
 
@@ -88,7 +102,7 @@ At minimum, test these journeys when relevant:
 
 For important pages in each journey, identify the page's job and apply the matching page-type contract rather than using one generic checklist everywhere.
 
-### 6. Cross-check examples, reference material, and authored syntax
+### 7. Cross-check examples, reference material, and authored syntax
 
 For every important example or reference page sampled:
 
@@ -100,7 +114,18 @@ For every important example or reference page sampled:
 - flag stale, impossible, insecure, unsupported-rendering, or contradictory examples with high priority;
 - prefer generated or source-derived reference material when manual duplication is likely to drift.
 
-### 7. Score and prioritize
+### 8. Merge, verify, score, and prioritize
+
+In parallel mode, merge candidate findings before scoring:
+
+- deduplicate findings that share one root cause;
+- use independent corroboration to raise confidence, not severity;
+- resolve disagreements against primary source-of-truth evidence;
+- mark unresolved claims as unverified instead of inventing certainty;
+- independently verify the decisive evidence for every Critical and High finding;
+- compute one final rubric score only after the merged finding set is stable.
+
+In direct mode, apply the same evidence and confidence discipline.
 
 Score the site using the weighted rubric in `reference/review-rubric.md`. A numerical score is a summary, not a substitute for findings.
 
@@ -113,7 +138,7 @@ Use severities:
 
 Do not mark a missing optional page as High merely because a framework recommends it. Tie severity to actual user impact.
 
-### 8. Produce an actionable review
+### 9. Produce an actionable review
 
 Use this order:
 
@@ -123,7 +148,7 @@ Use this order:
 4. **Coverage gaps**: missing or weak journeys/content types.
 5. **MkDocs observations**: navigation, search, build validation, versioning, edit links, accessibility, and maintainability.
 6. **Suggested next structure**: only if information architecture needs improvement.
-7. **Validation limits**: commands or checks that could not be run.
+7. **Validation limits**: commands or checks that could not be run, including failed/unavailable specialist workstreams when relevant.
 
 For each finding include:
 
@@ -136,6 +161,8 @@ Fix: the smallest concrete improvement that resolves the issue
 ```
 
 When line numbers are unavailable, use the most precise heading or file reference possible.
+
+Do not expose internal agent identities or present the final review as a collection of specialist transcripts. The final output should be one coherent, evidence-backed assessment.
 
 ## Review stance
 
