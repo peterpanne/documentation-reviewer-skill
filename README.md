@@ -18,6 +18,21 @@ The skill emphasizes:
 
 It uses a 100-point weighted rubric but prioritizes actionable findings over the score itself.
 
+## Parallel multi-agent review
+
+For substantial reviews, the skill automatically uses parallel specialist subagents when the coding-agent host provides them and the review can be split into independent workstreams.
+
+The coordinator first performs a shallow repository orientation and creates a shared review brief. It then fans out distinct specialists for areas such as:
+
+- technical truth and source-of-truth alignment;
+- developer journeys, page purpose, and information architecture;
+- examples, links, MkDocs configuration, and documentation-system behavior;
+- security, accessibility, compatibility, and maintainability when those areas warrant a separate specialist.
+
+The coordinator does not simply concatenate their reports. It deduplicates shared root causes, resolves disagreements against primary sources, verifies the evidence behind Critical and High findings, recalibrates severity from developer impact, and computes one final scorecard after the merged finding set is stable.
+
+Small or tightly sequential reviews stay in direct mode instead of paying subagent overhead. If the host does not expose subagents, the same specialist passes can be performed sequentially.
+
 ## Install with GitHub CLI for different AI coding tools
 
 GitHub CLI can discover this repository through the standard `skills/*/SKILL.md` layout and install the skill into the correct directory for many supported coding agents.
@@ -135,6 +150,7 @@ skills/
     └── reference/
         ├── mkdocs-review.md
         ├── page-type-checks.md
+        ├── parallel-review.md
         └── review-rubric.md
 evals/
 └── evals.json
@@ -150,15 +166,18 @@ For maintainers, GitHub CLI can validate repository skills against the Agent Ski
 gh skill publish --dry-run
 ```
 
-The scenarios in `evals/evals.json` cover developer journeys, source-of-truth drift, page-type behavior, MkDocs rendering compatibility, and house-style boundaries. For stronger skill evaluation, run representative prompts both without the skill and with the skill enabled, compare the results, and repeat across the Claude models you intend to support.
+The scenarios in `evals/evals.json` cover developer journeys, source-of-truth drift, page-type behavior, MkDocs rendering compatibility, house-style boundaries, multi-agent fan-out, delegation damping for small reviews, and merged-finding adjudication. For stronger skill evaluation, run representative prompts both without the skill and with the skill enabled, compare the results, and repeat across the Claude models or other coding agents you intend to support.
 
 ## Design notes
 
-The skill is intentionally concise at the entry point and keeps the scoring rubric, page-type contracts, and MkDocs-specific guidance in one-level-deep reference files. This follows the progressive-disclosure model recommended for Agent Skills.
+The skill is intentionally concise at the entry point and keeps the scoring rubric, page-type contracts, MkDocs-specific guidance, and parallel orchestration details in one-level-deep reference files. This follows the progressive-disclosure model recommended for Agent Skills.
+
+For multi-agent execution, the skill follows the same principle Anthropic recommends for subagent orchestration: delegate independent workstreams that benefit from isolated context and parallel execution, while keeping simple or tightly coupled tasks in the main agent.
 
 The review approach is informed by:
 
 - Anthropic Agent Skills authoring guidance: concise entry points, explicit trigger descriptions, progressive disclosure, workflows, feedback loops, and evaluations;
+- Anthropic agentic prompting guidance: parallelize independent tool/subagent work and avoid unnecessary subagent use for simple tasks;
 - Diátaxis: distinguish tutorial, how-to, reference, and explanation needs;
 - Google developer documentation style guidance: clarity, consistency, developer-oriented code formatting, and accessibility;
 - MkDocs and Material for MkDocs guidance: meaningful navigation/search, strict builds, repository/edit integration, versioning when needed, and reproducible documentation builds.
