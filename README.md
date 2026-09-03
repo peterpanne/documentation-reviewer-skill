@@ -11,25 +11,32 @@ The skill emphasizes:
 - precise reference documentation;
 - copyable, verifiable examples;
 - information architecture and searchability;
+- cognitive load for real developer journeys;
 - troubleshooting and recovery;
 - security-sensitive guidance;
 - accessibility;
 - MkDocs configuration, build validation, and maintainability.
 
-It uses a 100-point weighted rubric but prioritizes actionable findings over the score itself.
+It uses a 100-point weighted rubric but prioritizes actionable findings over the score itself. Cognitive load is treated as a cross-cutting diagnostic rather than a separate score, so one root cause is not penalized twice.
 
 ## Parallel multi-agent review
 
 For substantial reviews, the skill automatically uses parallel specialist subagents when the coding-agent host provides them and the review can be split into independent workstreams.
 
-The coordinator first performs a shallow repository orientation and creates a shared review brief. It then fans out distinct specialists for areas such as:
+The coordinator first performs a shallow repository orientation and creates a shared review brief. It then fans out four default specialists:
 
-- technical truth and source-of-truth alignment;
-- developer journeys, page purpose, and information architecture;
-- examples, links, MkDocs configuration, and documentation-system behavior;
-- security, accessibility, compatibility, and maintainability when those areas warrant a separate specialist.
+- **Technical truth**: source-of-truth alignment, commands, inputs, defaults, outputs, constraints, and compatibility.
+- **Developer journeys and information architecture**: first success, common tasks, troubleshooting, navigation, page purpose, and findability.
+- **Examples and documentation system**: copyability, verification, links, MkDocs configuration, Material syntax, build/CI, and visual structure.
+- **Cognitive load**: avoidable working-memory burden, unclear decisions, context switching, terminology churn, sequencing problems, and example complexity.
 
-The coordinator does not simply concatenate their reports. It deduplicates shared root causes, resolves disagreements against primary sources, verifies the evidence behind Critical and High findings, recalibrates severity from developer impact, and computes one final scorecard after the merged finding set is stable.
+A fifth **risk and maintainability** specialist is added when security, accessibility, compatibility, or long-term documentation maintenance is materially relevant.
+
+The cognitive-load reviewer explicitly distinguishes unavoidable domain complexity from complexity introduced by the documentation. It should flag concrete load hotspots such as hidden prerequisites, unexplained alternatives, scattered required information, forward references, inconsistent terminology, or examples that force developers to mentally reconstruct missing context. It should not flag a page simply because the underlying software is sophisticated.
+
+The coordinator does not simply concatenate specialist reports. It deduplicates shared root causes, resolves disagreements against primary sources, verifies the evidence behind Critical and High findings, recalibrates severity from developer impact, and computes one final scorecard after the merged finding set is stable.
+
+Specialists report confidence on a 0-100 scale. Critical and High findings require at least 80 confidence after coordinator verification. Repeated detection increases confidence only when evidence supports it; it never increases severity by itself.
 
 Small or tightly sequential reviews stay in direct mode instead of paying subagent overhead. If the host does not expose subagents, the same specialist passes can be performed sequentially.
 
@@ -123,7 +130,7 @@ For a personal standalone Claude Code skill, copy it to:
 ## Example prompts
 
 ```text
-Review the documentation in this repository for developers. Focus on the main user journeys and technical accuracy. Do not change files.
+Review the documentation in this repository for developers. Focus on the main user journeys, technical accuracy, and avoidable cognitive load. Do not change files.
 ```
 
 ```text
@@ -148,11 +155,13 @@ skills/
 └── reviewing-developer-documentation/
     ├── SKILL.md
     └── reference/
+        ├── cognitive-load-review.md
         ├── mkdocs-review.md
         ├── page-type-checks.md
         ├── parallel-review.md
         └── review-rubric.md
 evals/
+├── cognitive-load-evals.json
 └── evals.json
 ```
 
@@ -166,13 +175,17 @@ For maintainers, GitHub CLI can validate repository skills against the Agent Ski
 gh skill publish --dry-run
 ```
 
-The scenarios in `evals/evals.json` cover developer journeys, source-of-truth drift, page-type behavior, MkDocs rendering compatibility, house-style boundaries, multi-agent fan-out, delegation damping for small reviews, and merged-finding adjudication. For stronger skill evaluation, run representative prompts both without the skill and with the skill enabled, compare the results, and repeat across the Claude models or other coding agents you intend to support.
+The scenarios in `evals/evals.json` cover developer journeys, source-of-truth drift, page-type behavior, MkDocs rendering compatibility, house-style boundaries, multi-agent fan-out, delegation damping for small reviews, and merged-finding adjudication.
+
+`evals/cognitive-load-evals.json` adds cases for hidden prerequisites, context switching, excessive choices before first success, terminology churn, intrinsic complexity that should *not* be flagged, and confidence filtering.
+
+For stronger skill evaluation, run representative prompts both without the skill and with the skill enabled, compare the results, and repeat across the Claude models or other coding agents you intend to support.
 
 ## Design notes
 
-The skill is intentionally concise at the entry point and keeps the scoring rubric, page-type contracts, MkDocs-specific guidance, and parallel orchestration details in one-level-deep reference files. This follows the progressive-disclosure model recommended for Agent Skills.
+The skill is intentionally concise at the entry point and keeps the scoring rubric, page-type contracts, cognitive-load guidance, MkDocs-specific guidance, and parallel orchestration details in one-level-deep reference files. This follows the progressive-disclosure model recommended for Agent Skills.
 
-For multi-agent execution, the skill follows the same principle Anthropic recommends for subagent orchestration: delegate independent workstreams that benefit from isolated context and parallel execution, while keeping simple or tightly coupled tasks in the main agent.
+For multi-agent execution, the skill follows the same principle Anthropic recommends for subagent orchestration: delegate independent workstreams that benefit from isolated context and parallel execution, while keeping simple or tightly coupled tasks in the main agent. The numeric confidence model is inspired by Anthropic's own review workflows but adapted for documentation, where some user-experience findings are less binary than code defects.
 
 The review approach is informed by:
 
