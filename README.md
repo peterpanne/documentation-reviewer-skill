@@ -24,6 +24,14 @@ For broad reviews, Claude Code can use dedicated specialist agents to review the
 
 The preferred installation method is GitHub CLI's portable `gh skill` support.
 
+The Claude-agent helper requires **GitHub CLI 2.99.0 or newer**, because it uses `gh skill list` to resolve the installed skill path and version.
+
+Check your version:
+
+```bash
+gh version
+```
+
 Install the skill for Claude Code in the current project:
 
 ```bash
@@ -32,7 +40,7 @@ gh skill install peterpanne/documentation-reviewer-skill \
   --agent claude-code
 ```
 
-The skill includes an explicit helper for installing the five Claude Code reviewer agents. Locate the installed skill and run the helper:
+The skill includes a helper that installs the five Claude Code reviewer agents. Locate the installed helper and run it:
 
 ```bash
 SKILL_DIR="$(gh skill list \
@@ -58,7 +66,16 @@ $SkillDir = gh skill list `
 & "$SkillDir/scripts/install-claude-agents.ps1"
 ```
 
-The helper installs these Claude agents into the current project's `.claude/agents/` directory:
+The helper itself uses `gh skill list` to:
+
+- verify the installed skill and its version;
+- derive the matching Claude Code configuration root;
+- install the agents into the corresponding `agents/` directory;
+- fetch agent definitions from the same skill version.
+
+For the default project-scope Claude Code installation, that target is `.claude/agents/`.
+
+The installed agents are:
 
 ```text
 technical-truth-reviewer
@@ -68,7 +85,7 @@ cognitive-load-reviewer
 risk-maintainability-reviewer
 ```
 
-The helper uses the version recorded by `gh skill`, so the skill and agent definitions stay aligned. It refuses to overwrite existing agent files unless you explicitly pass `--force` or `-Force`.
+The helper refuses to overwrite existing agent files unless you explicitly pass `--force` or `-Force`.
 
 Then ask Claude Code:
 
