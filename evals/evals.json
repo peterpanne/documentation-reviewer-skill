@@ -74,6 +74,7 @@
     "name": "large-review-parallel-fanout",
     "query": "Perform a full documentation review of a medium-sized MkDocs developer tool with a quickstart, eight task guides, generated API reference, schemas, troubleshooting, CI, and implementation/tests. Subagents are available.",
     "expected_behavior": [
+      "States that parallel review mode was selected and gives a short reason",
       "Performs a shallow coordinator orientation before delegation",
       "Creates one shared review brief covering audience, main journeys, relevant documentation, sources of truth, project conventions, and MkDocs/build context",
       "Launches independent specialist review workstreams concurrently rather than sequentially when the host supports parallel subagents",
@@ -86,6 +87,7 @@
     "name": "small-review-no-agent-overhead",
     "query": "Review this single 35-line MkDocs how-to page for completeness and correctness. The page and the one command it documents are the only relevant files. Subagents are available.",
     "expected_behavior": [
+      "States that direct review mode was selected and gives a short reason",
       "Works directly instead of spawning several subagents for a narrow single-page review",
       "Applies the how-to page contract and verifies the documented command",
       "Does not treat availability of subagents as a requirement to use them",
@@ -102,6 +104,17 @@
       "Re-evaluates severity from actual developer impact instead of averaging or voting on specialist severities",
       "Independently verifies decisive evidence before including a Critical or High finding",
       "Computes one final rubric score after findings are merged rather than combining specialist scores"
+    ]
+  },
+  {
+    "name": "recently-edited-small-site-still-parallel",
+    "query": "I just edited all four pages of this MkDocs developer site and already cross-checked its action metadata and schemas in this session. Now perform a full documentation review from different angles. Subagents are available.",
+    "expected_behavior": [
+      "States that parallel review mode was selected because the request is a full-site multi-angle review",
+      "Reuses fresh source-of-truth and mechanical evidence in the shared brief instead of needlessly repeating it",
+      "Does not treat recent edits, repository familiarity, a small page count, or earlier checks as reasons to skip independent specialist perspectives",
+      "Launches distinct specialist workstreams for the materially relevant review dimensions",
+      "Merges the independent findings into one evidence-backed review"
     ]
   }
 ]
