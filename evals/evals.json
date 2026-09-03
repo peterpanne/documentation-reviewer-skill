@@ -39,5 +39,35 @@
       "Does not install or upgrade dependencies during a review without permission",
       "Separates current breakage from longer-term toolchain maintenance recommendations"
     ]
+  },
+  {
+    "name": "how-to-missing-verification",
+    "query": "Review docs/guides/deploy.md. It is a how-to with prerequisites and three exact deployment commands, but after the final state-changing command the page ends with links to other docs. There is a supported status command in the repository that would confirm the deployment succeeded.",
+    "expected_behavior": [
+      "Recognizes the page as a task-oriented how-to and applies a how-to-specific contract",
+      "Flags the missing verification step because success is not self-evident and a supported check exists",
+      "Recommends the verified repository status command rather than inventing a check",
+      "Does not demand unrelated tutorial, concept, FAQ, or decorative sections"
+    ]
+  },
+  {
+    "name": "unsupported-material-syntax",
+    "query": "Review an MkDocs Material site where docs/setup.md uses ???+ collapsible questions, === content tabs, and a mermaid fence. mkdocs.yml enables admonition and superfences, but not pymdownx.details, pymdownx.tabbed, or a Mermaid custom fence/plugin.",
+    "expected_behavior": [
+      "Maps each sampled non-standard construct to the extension or configuration it requires",
+      "Reports the unsupported details, tabs, and Mermaid rendering as functional documentation defects",
+      "Does not assume Material syntax is enabled merely because the theme is Material",
+      "Suggests either enabling the required project-compatible extensions or simplifying the authored Markdown"
+    ]
+  },
+  {
+    "name": "material-visual-overuse-and-house-style",
+    "query": "Review a valid MkDocs Material guide that wraps routine paragraphs in admonitions, puts sequential steps into tabs, and uses a Mermaid diagram for a simple A-to-B relationship. The repository style guide also requires 100-character lines and relative internal links.",
+    "expected_behavior": [
+      "Flags tabs/admonitions/diagram only where they reduce clarity or hide the task flow, rather than treating Material features as inherently good or bad",
+      "Recommends simpler prose or ordered steps when the visual feature adds no comprehension value",
+      "Enforces the repository's explicit line-length and link-style rules as project conventions",
+      "Does not generalize those house-style rules into universal documentation criteria"
+    ]
   }
 ]
