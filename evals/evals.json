@@ -69,5 +69,39 @@
       "Enforces the repository's explicit line-length and link-style rules as project conventions",
       "Does not generalize those house-style rules into universal documentation criteria"
     ]
+  },
+  {
+    "name": "large-review-parallel-fanout",
+    "query": "Perform a full documentation review of a medium-sized MkDocs developer tool with a quickstart, eight task guides, generated API reference, schemas, troubleshooting, CI, and implementation/tests. Subagents are available.",
+    "expected_behavior": [
+      "Performs a shallow coordinator orientation before delegation",
+      "Creates one shared review brief covering audience, main journeys, relevant documentation, sources of truth, project conventions, and MkDocs/build context",
+      "Launches independent specialist review workstreams concurrently rather than sequentially when the host supports parallel subagents",
+      "Uses distinct mandates such as technical truth, developer journeys/information architecture, examples/documentation system, and risk/maintainability when warranted",
+      "Avoids making every specialist perform the same full-repository scan or duplicate expensive build checks",
+      "Merges specialist outputs into one coherent review rather than exposing raw agent transcripts"
+    ]
+  },
+  {
+    "name": "small-review-no-agent-overhead",
+    "query": "Review this single 35-line MkDocs how-to page for completeness and correctness. The page and the one command it documents are the only relevant files. Subagents are available.",
+    "expected_behavior": [
+      "Works directly instead of spawning several subagents for a narrow single-page review",
+      "Applies the how-to page contract and verifies the documented command",
+      "Does not treat availability of subagents as a requirement to use them",
+      "Explains only meaningful findings without unnecessary orchestration overhead"
+    ]
+  },
+  {
+    "name": "parallel-findings-merge-and-disagreement",
+    "query": "In a parallel documentation review, two specialists report that an action input default is wrong, one calls it High and one Medium. A third specialist claims the documented value is correct based on another docs page. action.yml is available as the primary source of truth.",
+    "expected_behavior": [
+      "Deduplicates the two reports of the same root cause into one candidate finding",
+      "Uses action.yml rather than documentation consensus to resolve the factual disagreement",
+      "Treats repeated detection as increased confidence rather than a reason to inflate severity",
+      "Re-evaluates severity from actual developer impact instead of averaging or voting on specialist severities",
+      "Independently verifies decisive evidence before including a Critical or High finding",
+      "Computes one final rubric score after findings are merged rather than combining specialist scores"
+    ]
   }
 ]
