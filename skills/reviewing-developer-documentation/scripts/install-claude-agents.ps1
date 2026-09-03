@@ -1,9 +1,5 @@
 param(
-    [ValidateSet("project", "user")]
-    [string]$Scope = "project",
-
     [string]$Ref = "",
-
     [switch]$Force
 )
 
@@ -23,29 +19,57 @@ if (-not (Get-Command gh -ErrorAction SilentlyContinue)) {
     throw "GitHub CLI (gh) is required."
 }
 
-if ($Scope -eq "project") {
-    $ProjectRoot = (& git rev-parse --show-toplevel 2>$null)
-    if (-not $ProjectRoot) {
-        throw "Project scope requires running inside a Git repository."
-    }
-    $TargetDir = Join-Path $ProjectRoot ".claude/agents"
-} else {
-    $ClaudeHome = if ($env:CLAUDE_CONFIG_DIR) { $env:CLAUDE_CONFIG_DIR } else { Join-Path $HOME ".claude" }
-    $TargetDir = Join-Path $ClaudeHome "agents"
+& gh skill list --help *> $null
+if ($LASTEXITCODE -ne 0) {
+    throw "This helper requires a GitHub CLI version with 'gh skill list' support. Upgrade GitHub CLI and retry."
 }
+
+$ScriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
+$SkillDir = (Resolve-Path (Join-Path $ScriptDir "..")).Path
+$SkillsRoot = Split-Path -Parent $SkillDir
+
+$Entry = & gh skill list `
+    --dir $SkillsRoot `
+    --json skillName,path,version,sourceURL `
+    --jq ".[] | select(.skillName == `"$SkillName`") | [.path, .version, .sourceURL] | @tsv" |
+    Select-Object -First 1
+
+if (-not $Entry) {
+    throw "Could not find '$SkillName' with gh skill list under '$SkillsRoot'. Run this helper from the copy installed by gh skill."
+}
+
+$Fields = $Entry -split "`t", 3
+$ListedPath = $Fields[0]
+$ListedVersion = if ($Fields.Count -gt 1) { $Fields[1] } else { "" }
+$SourceUrl = if ($Fields.Count -gt 2) { $Fields[2] } else { "" }
+
+if (-not $ListedPath -or $ListedPath -eq "null") {
+    throw "gh skill list did not return an installed path for '$SkillName'."
+}
+
+$ListedPath = (Resolve-Path $ListedPath).Path
+if ($ListedPath -ne $SkillDir) {
+    throw "The running helper does not match the skill entry returned by gh skill list. Helper skill: '$SkillDir'. Listed skill: '$ListedPath'."
+}
+
+$ClaudeRoot = Split-Path -Parent $SkillsRoot
+$TargetDir = Join-Path $ClaudeRoot "agents"
 
 if (-not $Ref) {
-    $Ref = (& gh skill list `
-        --agent claude-code `
-        --scope $Scope `
-        --json skillName,version `
-        --jq ".[] | select(.skillName == `"$SkillName`") | .version" `
-        | Select-Object -First 1)
+    $Ref = $ListedVersion
+}
+if (-not $Ref -or $Ref -eq "null") {
+    throw "gh skill list did not report a version. Pass -Ref <tag-or-commit>."
 }
 
-if (-not $Ref -or $Ref -eq "null") {
-    $Ref = "main"
-    Write-Warning "Could not determine the installed skill version; using ref '$Ref'."
+if ($SourceUrl -and $SourceUrl -ne "null" -and $SourceUrl.StartsWith("https://github.com/")) {
+    $SourceRepo = $SourceUrl.Substring("https://github.com/".Length).TrimEnd("/")
+    if ($SourceRepo.EndsWith(".git")) {
+        $SourceRepo = $SourceRepo.Substring(0, $SourceRepo.Length - 4)
+    }
+    if ($SourceRepo -match "^[^/]+/[^/]+$") {
+        $Repository = $SourceRepo
+    }
 }
 
 foreach ($Agent in $Agents) {
@@ -92,8 +116,9 @@ try {
 Write-Host "Installed $($Agents.Count) Claude Code agents into:"
 Write-Host "  $TargetDir"
 Write-Host ""
-Write-Host "Source:"
-Write-Host "  $Repository@$Ref"
+Write-Host "Resolved by gh skill list:"
+Write-Host "  skill:  $ListedPath"
+Write-Host "  source: $Repository@$Ref"
 Write-Host ""
 Write-Host "Agents:"
 $Agents | ForEach-Object { Write-Host "  - $_" }
