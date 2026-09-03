@@ -8,8 +8,8 @@
   "plugins": [
     {
       "name": "documentation-reviewer",
-      "description": "Reviews developer-facing software documentation with a weighted quality rubric, page-type contracts, and MkDocs-specific checks.",
-      "version": "1.1.1",
+      "description": "Reviews developer-facing software documentation with parallel specialist fan-out, evidence-based merging, a weighted quality rubric, page-type contracts, and MkDocs-specific checks.",
+      "version": "1.2.0",
       "author": {
         "name": "peterpanne"
       },
