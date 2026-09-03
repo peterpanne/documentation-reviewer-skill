@@ -58,6 +58,14 @@ gh skill install peterpanne/documentation-reviewer-skill \
   --scope user
 ```
 
+### Updating
+
+Update an installed skill to the latest version from its recorded source:
+
+```bash
+gh skill update reviewing-developer-documentation
+```
+
 ## What the reviewer checks
 
 ### Can developers trust the docs?
