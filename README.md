@@ -40,40 +40,34 @@ gh skill install peterpanne/documentation-reviewer-skill \
   --agent claude-code
 ```
 
-The skill includes a helper that installs the five Claude Code reviewer agents. Locate the installed helper and run it:
+Then install the five Claude Code reviewer agents:
 
 ```bash
-SKILL_DIR="$(gh skill list \
-  --agent claude-code \
-  --scope project \
-  --json skillName,path \
-  --jq '.[] | select(.skillName == "reviewing-developer-documentation") | .path' \
-  | head -n 1)"
-
-bash "$SKILL_DIR/scripts/install-claude-agents.sh"
+gh api \
+  repos/peterpanne/documentation-reviewer-skill/contents/skills/reviewing-developer-documentation/scripts/install-claude-agents.sh \
+  -H "Accept: application/vnd.github.raw+json" \
+  | bash
 ```
 
 On PowerShell:
 
 ```powershell
-$SkillDir = gh skill list `
-  --agent claude-code `
-  --scope project `
-  --json skillName,path `
-  --jq '.[] | select(.skillName == "reviewing-developer-documentation") | .path' |
-  Select-Object -First 1
+$Installer = gh api `
+  repos/peterpanne/documentation-reviewer-skill/contents/skills/reviewing-developer-documentation/scripts/install-claude-agents.ps1 `
+  -H "Accept: application/vnd.github.raw+json"
 
-& "$SkillDir/scripts/install-claude-agents.ps1"
+$Installer | pwsh -NoProfile -Command -
 ```
 
-The helper itself uses `gh skill list` to:
+You do **not** need to find the installed skill directory yourself. The helper runs `gh skill list` internally to:
 
-- verify the installed skill and its version;
-- derive the matching Claude Code configuration root;
-- install the agents into the corresponding `agents/` directory;
+- find the installed `reviewing-developer-documentation` skill;
+- determine project vs. user scope;
+- resolve the installed skill path and version;
+- derive the matching Claude Code `agents/` directory;
 - fetch agent definitions from the same skill version.
 
-For the default project-scope Claude Code installation, that target is `.claude/agents/`.
+For the default project-scope Claude Code installation, the agents are installed into `.claude/agents/`.
 
 The installed agents are:
 
@@ -111,17 +105,21 @@ gh skill install peterpanne/documentation-reviewer-skill \
 Then install the Claude agents at user scope:
 
 ```bash
-SKILL_DIR="$(gh skill list \
-  --agent claude-code \
-  --scope user \
-  --json skillName,path \
-  --jq '.[] | select(.skillName == "reviewing-developer-documentation") | .path' \
-  | head -n 1)"
-
-bash "$SKILL_DIR/scripts/install-claude-agents.sh" --scope user
+gh api \
+  repos/peterpanne/documentation-reviewer-skill/contents/skills/reviewing-developer-documentation/scripts/install-claude-agents.sh \
+  -H "Accept: application/vnd.github.raw+json" \
+  | bash -s -- --scope user
 ```
 
-PowerShell uses the same flow with `-Scope user`.
+On PowerShell:
+
+```powershell
+$Installer = gh api `
+  repos/peterpanne/documentation-reviewer-skill/contents/skills/reviewing-developer-documentation/scripts/install-claude-agents.ps1 `
+  -H "Accept: application/vnd.github.raw+json"
+
+$Installer | pwsh -NoProfile -Command - -Scope user
+```
 
 ### Other AI coding tools
 
@@ -151,20 +149,25 @@ Update the skill with:
 gh skill update reviewing-developer-documentation
 ```
 
-If you installed the Claude agents with the helper, rerun it with overwrite enabled so the agents match the updated skill:
+If you installed the Claude agents with the helper, rerun the helper with overwrite enabled so the agents match the updated skill:
 
 ```bash
-SKILL_DIR="$(gh skill list \
-  --agent claude-code \
-  --scope project \
-  --json skillName,path \
-  --jq '.[] | select(.skillName == "reviewing-developer-documentation") | .path' \
-  | head -n 1)"
-
-bash "$SKILL_DIR/scripts/install-claude-agents.sh" --force
+gh api \
+  repos/peterpanne/documentation-reviewer-skill/contents/skills/reviewing-developer-documentation/scripts/install-claude-agents.sh \
+  -H "Accept: application/vnd.github.raw+json" \
+  | bash -s -- --force
 ```
 
-For user scope, add `--scope user`. PowerShell users can run the `.ps1` helper with `-Force`.
+For user scope:
+
+```bash
+gh api \
+  repos/peterpanne/documentation-reviewer-skill/contents/skills/reviewing-developer-documentation/scripts/install-claude-agents.sh \
+  -H "Accept: application/vnd.github.raw+json" \
+  | bash -s -- --scope user --force
+```
+
+PowerShell users can stream the `.ps1` helper as above and pass `-Force` (and `-Scope user` when needed).
 
 ### Alternative: native Claude Code plugin
 
