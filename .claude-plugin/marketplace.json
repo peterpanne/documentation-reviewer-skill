@@ -1,0 +1,18 @@
+{
+  "name": "documentation-reviewer-skill",
+  "owner": {
+    "name": "peterpanne"
+  },
+  "plugins": [
+    {
+      "name": "documentation-reviewer",
+      "description": "Reviews developer-facing software documentation with a weighted quality rubric and MkDocs-specific checks.",
+      "version": "1.0.0",
+      "author": {
+        "name": "peterpanne"
+      },
+      "source": "./",
+      "category": "development"
+    }
+  ]
+}
