@@ -1,11 +1,11 @@
 ---
 name: reviewing-developer-documentation
-description: Reviews software documentation for developer audiences, with special attention to MkDocs and Material for MkDocs sites. Use when evaluating documentation quality, information architecture, onboarding, task guides, technical reference, examples, troubleshooting, documentation pull requests, or mkdocs.yml configuration, and when producing prioritized documentation improvement recommendations.
+description: Reviews software documentation for developer audiences, with special attention to MkDocs and Material for MkDocs sites. Use when evaluating documentation quality, information architecture, onboarding, task guides, technical reference, examples, troubleshooting, cognitive load, documentation pull requests, or mkdocs.yml configuration, and when producing prioritized documentation improvement recommendations.
 ---
 
 # Reviewing developer documentation
 
-Review documentation as a developer trying to complete real work. Optimize for correctness, task success, findability, trustworthy reference material, and maintainability. Do not reward documentation merely for being long or visually polished.
+Review documentation as a developer trying to complete real work. Optimize for correctness, task success, findability, low avoidable cognitive load, trustworthy reference material, and maintainability. Do not reward documentation merely for being long or visually polished.
 
 ## Operating rules
 
@@ -13,6 +13,7 @@ Review documentation as a developer trying to complete real work. Optimize for c
 - Treat implementation, schemas, action metadata, configuration definitions, tests, and release behavior as sources of truth. Never invent behavior to fill a documentation gap.
 - Separate **incorrect**, **missing**, **ambiguous**, and **unverified** information.
 - Verify commands, flags, configuration keys, file paths, URLs, UI labels, and internal page links before treating them as valid. Plausible-looking syntax is not evidence.
+- Distinguish intrinsic product/domain complexity from avoidable complexity introduced by the documentation.
 - Prioritize reader impact over stylistic preference. Do not flood the review with low-value grammar nits.
 - Do not modify files during a review unless the user explicitly asks to fix findings.
 - Never expose secrets found in examples, fixtures, workflows, logs, or local configuration. Refer to the file and issue without repeating the secret.
@@ -51,7 +52,15 @@ For a substantial review, use parallel subagents when the host provides them and
 
 Before fan-out, perform a shallow orientation pass and create one shared review brief so subagents do not all rediscover the repository independently. Then launch the independent specialists in the same parallel wave.
 
-Use the orchestration, specialist mandates, output contract, deduplication, disagreement handling, and scoring rules in [reference/parallel-review.md](reference/parallel-review.md).
+For broad reviews, the default specialist set is:
+
+1. technical truth;
+2. developer journeys and information architecture;
+3. examples and documentation system;
+4. cognitive load;
+5. risk and maintainability when materially relevant.
+
+Use the orchestration, specialist mandates, numeric confidence contract, deduplication, disagreement handling, and scoring rules in [reference/parallel-review.md](reference/parallel-review.md).
 
 Do **not** fan out for a simple single-page, single-setting, or tightly sequential review where delegation overhead is likely to exceed the benefit. If subagents are unavailable, perform the same specialist passes sequentially and merge them using the same rules.
 
@@ -71,7 +80,7 @@ Do not install packages, rewrite lockfiles, or change the environment unless the
 
 In parallel mode, assign expensive/shared mechanical checks to one specialist or the coordinator rather than running the same build in every subagent.
 
-### 5. Review information architecture and page purpose
+### 5. Review information architecture, page purpose, and cognitive load
 
 Classify content by reader need:
 
@@ -88,6 +97,8 @@ For the full rubric, read [reference/review-rubric.md](reference/review-rubric.m
 
 For page-level expectations, read [reference/page-type-checks.md](reference/page-type-checks.md).
 
+For cognitive-load checks, read [reference/cognitive-load-review.md](reference/cognitive-load-review.md).
+
 For MkDocs-specific checks, read [reference/mkdocs-review.md](reference/mkdocs-review.md).
 
 ### 6. Trace critical developer journeys
@@ -101,6 +112,8 @@ At minimum, test these journeys when relevant:
 5. **Upgrade/change**: Can a developer determine compatibility, breaking changes, deprecations, or version-specific behavior when that matters?
 
 For important pages in each journey, identify the page's job and apply the matching page-type contract rather than using one generic checklist everywhere.
+
+Also trace avoidable cognitive burden: how much must the developer remember, infer, reconcile, backtrack, or decide before taking the next correct action? Do not penalize necessary domain complexity.
 
 ### 7. Cross-check examples, reference material, and authored syntax
 
@@ -119,21 +132,24 @@ For every important example or reference page sampled:
 In parallel mode, merge candidate findings before scoring:
 
 - deduplicate findings that share one root cause;
-- use independent corroboration to raise confidence, not severity;
+- use independent corroboration to raise confidence only after verification, not severity;
 - resolve disagreements against primary source-of-truth evidence;
 - mark unresolved claims as unverified instead of inventing certainty;
 - independently verify the decisive evidence for every Critical and High finding;
+- require final confidence of at least 80/100 for Critical and High findings;
 - compute one final rubric score only after the merged finding set is stable.
 
 In direct mode, apply the same evidence and confidence discipline.
 
 Score the site using the weighted rubric in `reference/review-rubric.md`. A numerical score is a summary, not a substitute for findings.
 
+Cognitive load is a cross-cutting diagnostic, not a separate score. Map each validated load hotspot to the rubric category whose developer impact it explains and do not deduct twice for the same root cause.
+
 Use severities:
 
 - **Critical**: materially incorrect or unsafe guidance likely to cause broken deployments, data/security risk, or severe user harm.
 - **High**: blocks or seriously impairs a primary developer journey, or makes core reference unreliable.
-- **Medium**: creates recurring friction, ambiguity, poor findability, or maintenance risk.
+- **Medium**: creates recurring friction, ambiguity, poor findability, avoidable cognitive burden, or maintenance risk.
 - **Low**: polish or consistency improvement with limited impact.
 
 Do not mark a missing optional page as High merely because a framework recommends it. Tie severity to actual user impact.
@@ -146,9 +162,10 @@ Use this order:
 2. **Top findings**: Critical and High issues first, each with evidence and a concrete fix.
 3. **Scorecard**: category scores and total out of 100.
 4. **Coverage gaps**: missing or weak journeys/content types.
-5. **MkDocs observations**: navigation, search, build validation, versioning, edit links, accessibility, and maintainability.
-6. **Suggested next structure**: only if information architecture needs improvement.
-7. **Validation limits**: commands or checks that could not be run, including failed/unavailable specialist workstreams when relevant.
+5. **Cognitive-load hotspots**: include only meaningful, evidence-backed hotspots that are not already obvious from the top findings.
+6. **MkDocs observations**: navigation, search, build validation, versioning, edit links, accessibility, and maintainability.
+7. **Suggested next structure**: only if information architecture needs improvement.
+8. **Validation limits**: commands or checks that could not be run, including failed/unavailable specialist workstreams when relevant.
 
 For each finding include:
 
