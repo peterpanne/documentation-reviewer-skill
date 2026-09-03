@@ -1,8 +1,18 @@
 {
+  "$schema": "https://json.schemastore.org/claude-code-plugin-manifest.json",
   "name": "documentation-reviewer",
-  "version": "1.1.0",
+  "displayName": "Developer Documentation Reviewer",
+  "version": "1.1.1",
   "description": "Reviews developer-facing software documentation with a weighted quality rubric, page-type contracts, and MkDocs-specific checks.",
   "author": {
     "name": "peterpanne"
-  }
+  },
+  "homepage": "https://github.com/peterpanne/documentation-reviewer-skill",
+  "repository": "https://github.com/peterpanne/documentation-reviewer-skill",
+  "keywords": [
+    "documentation",
+    "developer-docs",
+    "mkdocs",
+    "review"
+  ]
 }
