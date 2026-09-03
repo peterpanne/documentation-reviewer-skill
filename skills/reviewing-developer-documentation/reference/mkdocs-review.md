@@ -19,6 +19,47 @@ Inspect `mkdocs.yml` / `mkdocs.yaml` for:
 
 Do not recommend a feature simply because Material offers it. Recommend it only when it fixes a reader or maintenance problem.
 
+## Material syntax compatibility
+
+For sampled pages, map non-standard Markdown/Material constructs to the configuration that enables them. A construct that looks correct in source but is unsupported by the active site configuration is a functional defect, not merely a style issue.
+
+Common mappings include:
+
+| Authored construct | Configuration/support to verify |
+|---|---|
+| `!!! note`, `!!! warning`, etc. | `admonition` |
+| `???` / `???+` collapsible details | `pymdownx.details` plus admonition support |
+| `=== "Variant"` content tabs | `pymdownx.tabbed`, commonly with `alternate_style: true` |
+| nested/custom fenced blocks | `pymdownx.superfences` |
+| Mermaid fenced diagrams | a configured Mermaid custom fence/plugin supported by the project |
+| `:material-...:` / icon emoji syntax | `pymdownx.emoji` with compatible Material emoji index/generator |
+| `{ .class }` attributes and button classes | `attr_list` |
+| Markdown inside HTML grid/card containers | `md_in_html` and any required attributes/classes |
+| code titles, line numbers, or line highlighting | the project's configured highlighting extensions/options |
+| inline highlighted code | `pymdownx.inlinehilite` when that syntax is used |
+
+Do not assume a construct is enabled because it is common in Material projects. Inspect the actual configuration used by the reviewed site/version.
+
+When syntax is unsupported, distinguish between:
+
+- content that renders as visibly broken/plain text;
+- content whose intended interaction or styling silently disappears;
+- syntax supported locally but missing from CI/production because dependency/configuration paths differ.
+
+## Visual elements must earn their keep
+
+Review visual/interactive Material features for comprehension value rather than novelty:
+
+- **grids/cards** should improve navigation, grouping, or comparison rather than decorate ordinary prose;
+- **buttons** should emphasize meaningful next actions, not turn every link into a call to action;
+- **admonitions** should signal warnings, caveats, status, decisions, or genuinely useful side information rather than wrap routine text;
+- **tabs** should represent real alternatives such as operating systems, languages, or deployment modes, not hide sequential steps;
+- **Mermaid/diagrams** should clarify relationships, flows, states, or interactions that are harder to understand in prose;
+- **icons** should aid scanning or recognition and should not be the only carrier of meaning;
+- **code titles/highlights** should be used when a filename, location, or specific line materially matters to the task.
+
+If removing the visual feature leaves the information equally clear and easier to scan, recommend simplifying it.
+
 ## Strong default navigation for a developer tool
 
 Adapt to the product rather than copying literally:
@@ -74,7 +115,8 @@ Check for:
 - tabs used for true alternatives, not to hide sequential steps;
 - tab labels that make the choice explicit;
 - Mermaid diagrams that add understanding and have nearby textual explanation for accessibility;
-- annotations/admonitions used sparingly for important constraints, warnings, and context.
+- annotations/admonitions used sparingly for important constraints, warnings, and context;
+- referenced commands, filenames, flags, configuration keys, URLs, and internal links verified against project sources rather than accepted because they look plausible.
 
 ## Mechanical quality gates
 
@@ -91,8 +133,11 @@ Also inspect for:
 - orphaned Markdown files;
 - nav entries pointing to missing files;
 - stale links to renamed headings/pages;
+- unsupported Material syntax relative to the active extension configuration;
 - documentation warnings hidden by permissive configuration;
 - generated docs checked in without a clear regeneration process.
+
+Repository-specific Markdown rules such as exact line-length limits, mandatory relative-link style, or a specific collapsible FAQ form should be enforced only when the repository defines them. Do not promote house style into a universal quality rule.
 
 ## Reproducibility and ecosystem compatibility
 
@@ -110,7 +155,8 @@ Material provides accessible foundations, but authored content can still break t
 - descriptive link text;
 - no color/icon/direction-only instructions;
 - custom HTML, CSS, and JavaScript do not remove keyboard or screen-reader usability;
-- large tables remain usable on mobile/narrow widths.
+- large tables remain usable on mobile/narrow widths;
+- information hidden in collapsible UI remains discoverable and appropriate for that interaction.
 
 ## Suggested changes for a sparse reference-heavy site
 
