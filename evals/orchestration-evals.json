@@ -1,0 +1,57 @@
+[
+  {
+    "name": "full-site-must-invoke-named-plugin-agents",
+    "query": "Review this entire four-page MkDocs developer site from different angles. It documents many actions and schemas. The documentation-reviewer Claude Code plugin is installed and its plugin subagents are available.",
+    "expected_behavior": [
+      "Announces parallel review mode before substantive review work",
+      "Does not rely on automatic delegation or merely describe specialist roles",
+      "Explicitly invokes documentation-reviewer:technical-truth-reviewer, documentation-reviewer:developer-journey-reviewer, documentation-reviewer:docs-system-reviewer, and documentation-reviewer:cognitive-load-reviewer",
+      "Launches the four required specialists in the same concurrent wave when the host supports concurrent subagents",
+      "Adds documentation-reviewer:risk-maintainability-reviewer only when its mandate is materially relevant",
+      "Waits for the required workstreams to return or fail before final synthesis",
+      "Merges findings into one coordinated review rather than exposing specialist transcripts"
+    ]
+  },
+  {
+    "name": "recent-context-does-not-cancel-independent-review",
+    "query": "You just edited all four documentation pages, checked action.yml and schemas, and mkdocs build --strict passed. Now do a full documentation review from different angles. Plugin subagents are available.",
+    "expected_behavior": [
+      "Selects parallel mode because this is a full-site multi-angle review",
+      "Reuses fresh verified evidence in the shared brief",
+      "Does not use recent edits, repository familiarity, prior source checks, successful build, or small page count as reasons to skip fan-out",
+      "Explicitly invokes the required named plugin agents",
+      "Avoids asking every specialist to rerun the same mechanical validation"
+    ]
+  },
+  {
+    "name": "portable-skill-uses-host-native-subagents",
+    "query": "The skill was installed through a portable Agent Skills installer, so the Claude plugin-specific named agents are not available. The host still provides general-purpose parallel subagents. Perform a full documentation review.",
+    "expected_behavior": [
+      "Announces parallel review mode",
+      "Does not downgrade to direct mode merely because plugin-specific agents are missing",
+      "Explicitly launches equivalent independent host-native subagents for technical truth, developer journeys, examples/docs system, and cognitive load",
+      "Uses the specialist mandates from parallel-review.md",
+      "Records only a limitation if the host cannot provide an equivalent specialist workstream"
+    ]
+  },
+  {
+    "name": "broad-review-no-subagents-available",
+    "query": "Perform a full-site developer documentation review. This host exposes no subagent or worker mechanism.",
+    "expected_behavior": [
+      "States that parallel execution is unavailable rather than silently claiming direct mode was preferred",
+      "Performs the required specialist passes sequentially",
+      "Uses the same evidence, confidence, deduplication, and scoring rules",
+      "Records the lack of independent parallel execution under validation limits"
+    ]
+  },
+  {
+    "name": "narrow-page-review-stays-direct",
+    "query": "Review this one short troubleshooting entry and verify that its single documented command is correct. Plugin agents are available.",
+    "expected_behavior": [
+      "Announces direct review mode with a narrow-scope reason",
+      "Does not invoke all four specialist agents",
+      "Checks the page purpose and documented command directly",
+      "Avoids orchestration overhead for a genuinely narrow task"
+    ]
+  }
+]
