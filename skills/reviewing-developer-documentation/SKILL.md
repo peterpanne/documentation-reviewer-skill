@@ -83,9 +83,18 @@ When installed as the Claude Code plugin, invoke these plugin agents:
 
 Also invoke `documentation-reviewer:risk-maintainability-reviewer` when security, accessibility, compatibility, or long-term maintainability is materially relevant.
 
+When the skill was installed with `gh skill` and the bundled helper installed the Claude agents into `.claude/agents` or the user Claude configuration, invoke the equivalent local agents:
+
+1. `technical-truth-reviewer`
+2. `developer-journey-reviewer`
+3. `docs-system-reviewer`
+4. `cognitive-load-reviewer`
+
+Also invoke `risk-maintainability-reviewer` when its mandate is materially relevant.
+
 Give every specialist the same factual shared brief plus its distinct mandate. Do not ask every specialist to rerun the same build or rediscover the entire repository.
 
-If the named plugin agents are unavailable but the host provides general-purpose subagents, explicitly launch equivalent independent subagents with the mandates in [reference/parallel-review.md](reference/parallel-review.md). If the host provides no subagents, perform the same passes sequentially and state that parallel execution was unavailable.
+If neither the plugin-scoped nor helper-installed named agents are available but the host provides general-purpose subagents, explicitly launch equivalent independent subagents with the mandates in [reference/parallel-review.md](reference/parallel-review.md). If the host provides no subagents, perform the same passes sequentially and state that parallel execution was unavailable.
 
 Direct mode is appropriate only for genuinely narrow work such as one short page, one broken link, one `mkdocs.yml` setting, or a tightly sequential question. A user request to avoid subagents also overrides parallel mode.
 
