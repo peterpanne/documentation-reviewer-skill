@@ -6,21 +6,29 @@ The goal is not to maximize agent count. The goal is to reduce wall-clock time a
 
 ## When to fan out
 
-Prefer parallel review when at least three independent review dimensions are materially relevant, for example:
+Use parallel review when the host supports it and any of these conditions apply:
 
-- a full documentation-site review;
-- a documentation PR that changes multiple page types or source-of-truth surfaces;
-- a repository with several actions/APIs/schemas plus task guidance;
-- a review that needs correctness, information architecture, examples, cognitive-load analysis, MkDocs mechanics, and risk/maintainability checks.
+- the user asks for a full or broad documentation-site review
+- a documentation PR changes multiple page types or source-of-truth surfaces
+- the repository exposes several actions/APIs/schemas plus task guidance
+- at least three independent review dimensions are materially relevant, such as correctness, information architecture, examples, cognitive load, MkDocs mechanics, or risk/maintainability
 
-Work directly instead when the task is small or tightly sequential, for example:
+A small site can still require parallel review. Page count is not the deciding factor when the request is broad and several independent perspectives are useful.
 
-- one short page with one clear question;
-- a single broken link or wording issue;
-- a narrow `mkdocs.yml` setting check;
-- work where each step depends heavily on the previous step's result.
+Fresh coordinator context is reusable evidence, not a substitute for independent review. If the coordinator recently edited the docs, already ran source-of-truth checks, or has a successful `mkdocs build --strict` result from the same session, reuse that information in the shared brief and avoid repeating the same mechanical work. Do not use familiarity with the repository as a reason to skip specialist fan-out for a broad review.
 
-Do not spawn subagents merely because the host supports them. Parallelism should save time or provide useful independent perspectives.
+Work directly instead only when the request itself is genuinely narrow or tightly sequential, for example:
+
+- one short page with one clear question
+- a single broken link or wording issue
+- a narrow `mkdocs.yml` setting check
+- work where each step depends heavily on the previous step's result
+
+If subagents are unavailable, perform the same specialist passes sequentially. Do not silently reinterpret a broad review as a narrow one merely because parallel execution is unavailable or the coordinator already has context.
+
+Before substantive review work, state the chosen mode and one-line reason to the user. Keep this about orchestration, not internal identities, for example: `Review mode: parallel — this is a full-site review with several independent dimensions.`
+
+Do not spawn subagents merely because the host supports them for genuinely narrow tasks. Parallelism should save time or provide useful independent perspectives.
 
 ## Coordinator orientation
 
@@ -28,15 +36,16 @@ Before delegating, the coordinator should do a shallow orientation pass and prep
 
 The brief should contain the relevant subset of:
 
-- review scope and user request;
-- intended developer audience and assumed knowledge;
-- primary developer jobs-to-be-done;
-- important documentation paths and navigation structure;
-- project-specific instructions/style conventions;
-- likely sources of truth such as implementation, `action.yml`, schemas, tests, configuration definitions, release notes, and CI;
-- MkDocs configuration/build command;
-- supported versions/environments if known;
-- explicit exclusions or validation limitations.
+- review scope and user request
+- intended developer audience and assumed knowledge
+- primary developer jobs-to-be-done
+- important documentation paths and navigation structure
+- project-specific instructions/style conventions
+- likely sources of truth such as implementation, `action.yml`, schemas, tests, configuration definitions, release notes, and CI
+- MkDocs configuration/build command
+- supported versions/environments if known
+- explicit exclusions or validation limitations
+- fresh evidence already gathered by the coordinator that specialists can rely on without duplicating the same mechanical check
 
 Keep the brief factual. Do not pre-decide findings for the specialists.
 
@@ -50,11 +59,11 @@ Focus on factual alignment between documentation and software behavior.
 
 Review:
 
-- commands, flags, names, defaults, inputs, outputs, types, limits, and validation behavior;
-- action/API/schema/configuration reference accuracy;
-- permissions, authentication, environment assumptions, and supported versions;
-- contradictions between docs, examples, tests, metadata, schemas, and implementation;
-- stale or unverifiable claims.
+- commands, flags, names, defaults, inputs, outputs, types, limits, and validation behavior
+- action/API/schema/configuration reference accuracy
+- permissions, authentication, environment assumptions, and supported versions
+- contradictions between docs, examples, tests, metadata, schemas, and implementation
+- stale or unverifiable claims
 
 Prefer source-of-truth evidence over documentation consensus. Two docs repeating the same stale value do not make it true.
 
@@ -64,13 +73,13 @@ Focus on whether developers can find and complete real work.
 
 Review:
 
-- landing-page orientation and first success;
-- getting started/tutorial flow;
-- common how-to journeys;
-- troubleshooting and failure recovery;
-- upgrade/change/compatibility discoverability;
-- navigation, search language, cross-links, orphaned content, and page boundaries;
-- page-type contracts from `page-type-checks.md`.
+- landing-page orientation and first success
+- getting started/tutorial flow
+- common how-to journeys
+- troubleshooting and failure recovery
+- upgrade/change/compatibility discoverability
+- navigation, search language, cross-links, orphaned content, and page boundaries
+- page-type contracts from `page-type-checks.md`
 
 Do not impose a framework taxonomy merely for symmetry. Judge the actual journeys.
 
@@ -80,11 +89,11 @@ Focus on executable examples and the MkDocs delivery system.
 
 Review:
 
-- completeness, copyability, placeholders, expected results, and verification steps in examples;
-- code-fence languages and contextual placement of files/commands;
-- internal links and anchors;
-- `mkdocs.yml`, navigation, search, repository/edit links, extensions, Material syntax compatibility, build/CI checks, and dependency reproducibility;
-- whether tabs, admonitions, grids, diagrams, icons, and highlighting improve comprehension.
+- completeness, copyability, placeholders, expected results, and verification steps in examples
+- code-fence languages and contextual placement of files/commands
+- internal links and anchors
+- `mkdocs.yml`, navigation, search, repository/edit links, extensions, Material syntax compatibility, build/CI checks, and dependency reproducibility
+- whether tabs, admonitions, grids, diagrams, icons, and highlighting improve comprehension
 
 Use `mkdocs-review.md` for detailed checks.
 
@@ -96,13 +105,13 @@ Use `cognitive-load-review.md` as the detailed contract.
 
 Review especially:
 
-- working-memory burden from distant prerequisites, forward references, and incomplete fragments;
-- decision load from unexplained alternatives, premature options, and unclear branching criteria;
-- context switching between pages required to complete one primary task;
-- terminology churn or implementation language that forces mental translation;
-- information sequencing, including constraints revealed after the action they qualify;
-- example complexity and whether required versus optional details are distinguishable;
-- structural/visual overload from tabs, admonitions, tables, diagrams, or deeply fragmented sections.
+- working-memory burden from distant prerequisites, forward references, and incomplete fragments
+- decision load from unexplained alternatives, premature options, and unclear branching criteria
+- context switching between pages required to complete one primary task
+- terminology churn or implementation language that forces mental translation
+- information sequencing, including constraints revealed after the action they qualify
+- example complexity and whether required versus optional details are distinguishable
+- structural/visual overload from tabs, admonitions, tables, diagrams, or deeply fragmented sections
 
 Distinguish intrinsic product/domain complexity from avoidable complexity introduced by the documentation. Do not flag a difficult concept merely because the underlying software is difficult.
 
@@ -114,11 +123,11 @@ Use this specialist when security, accessibility, compatibility, or long-term ma
 
 Review:
 
-- secret handling, least privilege, destructive operations, untrusted input, and supply-chain implications;
-- accessibility of headings, links, tables, images, diagrams, custom HTML, and non-text cues;
-- compatibility/versioning/deprecation guidance;
-- generated/source-derived documentation and drift risk;
-- CI quality gates, dependency pinning, regeneration/contribution paths, and documentation-change expectations.
+- secret handling, least privilege, destructive operations, untrusted input, and supply-chain implications
+- accessibility of headings, links, tables, images, diagrams, custom HTML, and non-text cues
+- compatibility/versioning/deprecation guidance
+- generated/source-derived documentation and drift risk
+- CI quality gates, dependency pinning, regeneration/contribution paths, and documentation-change expectations
 
 For smaller reviews, fold this mandate into the other specialists rather than spawning an extra agent.
 
@@ -145,22 +154,22 @@ Also include a short `No issue found` note for important checks that were explic
 
 Use confidence independently from severity:
 
-- **0**: false positive or unsupported speculation;
-- **25**: plausible but weakly supported and not verified;
-- **50**: real issue is likely, but evidence or practical impact is limited;
-- **75**: strongly supported and likely to affect developers in practice;
-- **100**: directly confirmed by primary evidence or an unavoidable task-flow failure.
+- **0**: false positive or unsupported speculation
+- **25**: plausible but weakly supported and not verified
+- **50**: real issue is likely, but evidence or practical impact is limited
+- **75**: strongly supported and likely to affect developers in practice
+- **100**: directly confirmed by primary evidence or an unavoidable task-flow failure
 
 Intermediate scores are allowed. Do not inflate confidence because multiple specialists repeat the same assumption.
 
 Specialists must:
 
-- read relevant files before making code/configuration claims;
-- avoid editing files during review mode;
-- avoid scoring the whole documentation site;
-- avoid duplicating another specialist's mandate unless cross-domain evidence is necessary;
-- mark uncertain claims as unverified instead of filling gaps by inference;
-- report only findings with developer or maintenance impact, not cosmetic preferences.
+- read relevant files before making code/configuration claims
+- avoid editing files during review mode
+- avoid scoring the whole documentation site
+- avoid duplicating another specialist's mandate unless cross-domain evidence is necessary
+- mark uncertain claims as unverified instead of filling gaps by inference
+- report only findings with developer or maintenance impact, not cosmetic preferences
 
 ## Merge and adjudication
 
@@ -180,10 +189,10 @@ Independent detection by multiple specialists may increase confidence after veri
 
 When specialists disagree on a fact, severity, confidence, or recommendation:
 
-1. inspect the primary source of truth directly;
-2. prefer verified repository/product evidence over opinion or documentation consensus;
-3. distinguish factual disagreement from prioritization disagreement;
-4. if the evidence remains incomplete, keep the finding as `unverified` and lower confidence rather than inventing certainty.
+1. inspect the primary source of truth directly
+2. prefer verified repository/product evidence over opinion or documentation consensus
+3. distinguish factual disagreement from prioritization disagreement
+4. if the evidence remains incomplete, keep the finding as `unverified` and lower confidence rather than inventing certainty
 
 For every Critical and High candidate, independently verify the decisive evidence before including it in the final answer and require final confidence of at least 80. If a host supports cheap narrow delegation, a targeted validation subagent may be used for a disputed high-impact claim; otherwise the coordinator should verify it directly.
 
@@ -193,10 +202,10 @@ For Medium and Low findings, drop weakly supported observations that are primari
 
 Specialist severities are suggestions. Reassign severity based on the merged evidence and actual developer impact:
 
-- **Critical**: unsafe or materially wrong guidance with severe consequences;
-- **High**: blocks or seriously impairs a primary journey or makes core reference unreliable;
-- **Medium**: recurring friction, ambiguity, poor findability, avoidable cognitive burden, or maintenance risk;
-- **Low**: limited-impact polish or consistency issue.
+- **Critical**: unsafe or materially wrong guidance with severe consequences
+- **High**: blocks or seriously impairs a primary journey or makes core reference unreliable
+- **Medium**: recurring friction, ambiguity, poor findability, avoidable cognitive burden, or maintenance risk
+- **Low**: limited-impact polish or consistency issue
 
 Corroboration alone must not inflate severity.
 
@@ -212,10 +221,11 @@ The final review should read as one coherent expert assessment, not as a meeting
 
 ## Efficiency rules
 
-- Launch independent specialists in the same parallel wave whenever the host supports concurrent subagents.
-- Keep specialist mandates non-overlapping enough to avoid multiple full-repository rescans.
-- Give specialists the shared brief and point them at the most relevant paths, while allowing them to follow evidence where necessary.
-- Prefer four focused specialists for a broad review over many tiny agents; add the fifth only when its risk/maintainability mandate is material.
-- Do not ask every specialist to run the same build or expensive validation command. Assign shared mechanical checks to one specialist or the coordinator.
-- Do not block the whole review on a low-impact specialist failure. Record the coverage limitation and continue with verified findings from successful workstreams.
-- If subagents are unavailable, execute the same specialist passes sequentially and use the same merge rules.
+- Launch independent specialists in the same parallel wave whenever the host supports concurrent subagents
+- Keep specialist mandates non-overlapping enough to avoid multiple full-repository rescans
+- Give specialists the shared brief and point them at the most relevant paths, while allowing them to follow evidence where necessary
+- Prefer four focused specialists for a broad review over many tiny agents; add the fifth only when its risk/maintainability mandate is material
+- Reuse fresh coordinator evidence in the shared brief instead of rerunning identical mechanical checks, but do not count that evidence as an independent specialist perspective
+- Do not ask every specialist to run the same build or expensive validation command. Assign shared mechanical checks to one specialist or the coordinator
+- Do not block the whole review on a low-impact specialist failure. Record the coverage limitation and continue with verified findings from successful workstreams
+- If subagents are unavailable, execute the same specialist passes sequentially and use the same merge rules
