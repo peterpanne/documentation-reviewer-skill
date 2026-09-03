@@ -1,6 +1,6 @@
 # Developer documentation review skill
 
-A project-scoped Agent Skill for reviewing software documentation written for developers, with additional checks for MkDocs and Material for MkDocs.
+A Claude Code skill for reviewing software documentation written for developers, with additional checks for MkDocs and Material for MkDocs.
 
 ## What it reviews
 
@@ -18,9 +18,29 @@ The skill emphasizes:
 
 It uses a 100-point weighted rubric but prioritizes actionable findings over the score itself.
 
-## Install in Claude Code
+## Install from GitHub with Claude Code
 
-Copy the skill directory into the target repository:
+This repository is a Claude Code plugin marketplace, so it can be installed directly from GitHub without copying files manually.
+
+Add the GitHub repository as a marketplace:
+
+```bash
+claude plugin marketplace add peterpanne/documentation-reviewer-skill
+```
+
+Then install the plugin:
+
+```bash
+claude plugin install documentation-reviewer@documentation-reviewer-skill
+```
+
+Restart/reload Claude Code if your current session does not immediately discover the installed skill.
+
+The installed skill is `reviewing-developer-documentation` and is activated automatically when a documentation-review task matches its description.
+
+### Project-scoped alternative
+
+If you do not want a plugin installation, copy `skills/reviewing-developer-documentation/` into the target repository as:
 
 ```text
 .claude/skills/reviewing-developer-documentation/
@@ -28,7 +48,7 @@ Copy the skill directory into the target repository:
 
 Claude Code discovers project skills from `.claude/skills/` automatically.
 
-For a personal skill, copy the same directory to:
+For a personal standalone skill, copy it to:
 
 ```text
 ~/.claude/skills/reviewing-developer-documentation/
@@ -52,6 +72,22 @@ Review mkdocs.yml and the documentation information architecture. Suggest the sm
 Review the docs, then implement only the Critical and High findings.
 ```
 
+## Repository structure
+
+```text
+.claude-plugin/
+├── marketplace.json
+└── plugin.json
+skills/
+└── reviewing-developer-documentation/
+    ├── SKILL.md
+    └── reference/
+        ├── mkdocs-review.md
+        └── review-rubric.md
+evals/
+└── evals.json
+```
+
 ## Design notes
 
 The skill is intentionally concise at the entry point and keeps the scoring rubric and MkDocs-specific guidance in one-level-deep reference files. This follows the progressive-disclosure model recommended for Agent Skills.
@@ -65,4 +101,4 @@ The review approach is informed by:
 
 ## Repository
 
-This skill is maintained in `peterpanne/documentation-reviewer-skill`.
+https://github.com/peterpanne/documentation-reviewer-skill
