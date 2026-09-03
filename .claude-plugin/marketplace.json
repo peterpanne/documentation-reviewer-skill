@@ -1,5 +1,7 @@
 {
+  "$schema": "https://json.schemastore.org/claude-code-marketplace.json",
   "name": "documentation-reviewer-skill",
+  "description": "Developer documentation review skill for Claude Code, distributed from GitHub.",
   "owner": {
     "name": "peterpanne"
   },
@@ -7,12 +9,13 @@
     {
       "name": "documentation-reviewer",
       "description": "Reviews developer-facing software documentation with a weighted quality rubric, page-type contracts, and MkDocs-specific checks.",
-      "version": "1.1.0",
+      "version": "1.1.1",
       "author": {
         "name": "peterpanne"
       },
       "source": "./",
-      "category": "development"
+      "category": "development",
+      "homepage": "https://github.com/peterpanne/documentation-reviewer-skill"
     }
   ]
 }
