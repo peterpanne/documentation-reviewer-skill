@@ -1,4 +1,6 @@
 param(
+    [ValidateSet("project", "user")]
+    [string]$Scope = "project",
     [string]$Ref = "",
     [switch]$Force
 )
@@ -7,6 +9,7 @@ $ErrorActionPreference = "Stop"
 
 $Repository = "peterpanne/documentation-reviewer-skill"
 $SkillName = "reviewing-developer-documentation"
+$MinimumGhVersion = [version]"2.99.0"
 $Agents = @(
     "technical-truth-reviewer.md",
     "developer-journey-reviewer.md",
@@ -19,39 +22,38 @@ if (-not (Get-Command gh -ErrorAction SilentlyContinue)) {
     throw "GitHub CLI (gh) is required."
 }
 
-& gh skill list --help *> $null
-if ($LASTEXITCODE -ne 0) {
-    throw "This helper requires a GitHub CLI version with 'gh skill list' support. Upgrade GitHub CLI and retry."
+$GhVersionLine = (& gh version | Select-Object -First 1)
+if ($GhVersionLine -notmatch '^gh version ([0-9]+\.[0-9]+\.[0-9]+)') {
+    throw "Could not determine the installed GitHub CLI version. Run 'gh version' and ensure GitHub CLI $MinimumGhVersion or newer is installed."
 }
 
-$ScriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
-$SkillDir = (Resolve-Path (Join-Path $ScriptDir "..")).Path
-$SkillsRoot = Split-Path -Parent $SkillDir
+$GhVersion = [version]$Matches[1]
+if ($GhVersion -lt $MinimumGhVersion) {
+    throw "GitHub CLI $MinimumGhVersion or newer is required for 'gh skill list'. Found: $GhVersion. Upgrade GitHub CLI and retry."
+}
 
 $Entry = & gh skill list `
-    --dir $SkillsRoot `
+    --agent claude-code `
+    --scope $Scope `
     --json skillName,path,version,sourceURL `
     --jq ".[] | select(.skillName == `"$SkillName`") | [.path, .version, .sourceURL] | @tsv" |
     Select-Object -First 1
 
 if (-not $Entry) {
-    throw "Could not find '$SkillName' with gh skill list under '$SkillsRoot'. Run this helper from the copy installed by gh skill."
+    throw "Could not find '$SkillName' in Claude Code $Scope scope. Install it first with: gh skill install $Repository $SkillName --agent claude-code --scope $Scope"
 }
 
 $Fields = $Entry -split "`t", 3
-$ListedPath = $Fields[0]
+$SkillDir = $Fields[0]
 $ListedVersion = if ($Fields.Count -gt 1) { $Fields[1] } else { "" }
 $SourceUrl = if ($Fields.Count -gt 2) { $Fields[2] } else { "" }
 
-if (-not $ListedPath -or $ListedPath -eq "null") {
+if (-not $SkillDir -or $SkillDir -eq "null") {
     throw "gh skill list did not return an installed path for '$SkillName'."
 }
 
-$ListedPath = (Resolve-Path $ListedPath).Path
-if ($ListedPath -ne $SkillDir) {
-    throw "The running helper does not match the skill entry returned by gh skill list. Helper skill: '$SkillDir'. Listed skill: '$ListedPath'."
-}
-
+$SkillDir = (Resolve-Path $SkillDir).Path
+$SkillsRoot = Split-Path -Parent $SkillDir
 $ClaudeRoot = Split-Path -Parent $SkillsRoot
 $TargetDir = Join-Path $ClaudeRoot "agents"
 
@@ -117,8 +119,10 @@ Write-Host "Installed $($Agents.Count) Claude Code agents into:"
 Write-Host "  $TargetDir"
 Write-Host ""
 Write-Host "Resolved by gh skill list:"
-Write-Host "  skill:  $ListedPath"
+Write-Host "  skill:  $SkillDir"
+Write-Host "  scope:  $Scope"
 Write-Host "  source: $Repository@$Ref"
+Write-Host "  gh:     $GhVersion"
 Write-Host ""
 Write-Host "Agents:"
 $Agents | ForEach-Object { Write-Host "  - $_" }
