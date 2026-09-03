@@ -2,7 +2,7 @@
   "$schema": "https://json.schemastore.org/claude-code-plugin-manifest.json",
   "name": "documentation-reviewer",
   "displayName": "Developer Documentation Reviewer",
-  "version": "1.4.0",
+  "version": "1.4.1",
   "description": "Reviews developer-facing software documentation with bundled specialist subagents, deterministic parallel fan-out, cognitive-load analysis, evidence-based merging, a weighted quality rubric, page-type contracts, and MkDocs-specific checks.",
   "author": {
     "name": "peterpanne"
