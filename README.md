@@ -1,6 +1,6 @@
 # Developer documentation review skill
 
-A Claude Code skill for reviewing software documentation written for developers, with additional checks for MkDocs and Material for MkDocs.
+A portable Agent Skill for reviewing software documentation written for developers, with additional checks for MkDocs and Material for MkDocs. It can be installed for Claude Code and other Agent Skills-compatible coding tools.
 
 ## What it reviews
 
@@ -18,9 +18,60 @@ The skill emphasizes:
 
 It uses a 100-point weighted rubric but prioritizes actionable findings over the score itself.
 
-## Install from GitHub with Claude Code
+## Install with GitHub CLI for different AI coding tools
 
-This repository is a Claude Code plugin marketplace, so it can be installed directly from GitHub without copying files manually.
+GitHub CLI can discover this repository through the standard `skills/*/SKILL.md` layout and install the skill into the correct directory for many supported coding agents.
+
+`gh skill` is currently a GitHub CLI public-preview feature. Use GitHub CLI 2.90.0 or newer.
+
+Preview the skill before installing it:
+
+```bash
+gh skill preview peterpanne/documentation-reviewer-skill reviewing-developer-documentation
+```
+
+Install it into the current project for a specific coding agent:
+
+```bash
+gh skill install peterpanne/documentation-reviewer-skill reviewing-developer-documentation --agent <agent-id>
+```
+
+Examples:
+
+```bash
+# GitHub Copilot
+gh skill install peterpanne/documentation-reviewer-skill reviewing-developer-documentation --agent github-copilot
+
+# Claude Code
+gh skill install peterpanne/documentation-reviewer-skill reviewing-developer-documentation --agent claude-code
+
+# Cursor
+gh skill install peterpanne/documentation-reviewer-skill reviewing-developer-documentation --agent cursor
+
+# Codex
+gh skill install peterpanne/documentation-reviewer-skill reviewing-developer-documentation --agent codex
+
+# Gemini CLI
+gh skill install peterpanne/documentation-reviewer-skill reviewing-developer-documentation --agent gemini-cli
+```
+
+The default scope is the current project. To make the skill available across projects for an agent, use user scope:
+
+```bash
+gh skill install peterpanne/documentation-reviewer-skill reviewing-developer-documentation --agent claude-code --scope user
+```
+
+GitHub CLI records source provenance when it installs a skill, so installed copies can later be checked and updated with:
+
+```bash
+gh skill update reviewing-developer-documentation
+```
+
+Run `gh skill install --help` to see all currently supported `--agent` values.
+
+## Install as a Claude Code plugin
+
+This repository also remains a native Claude Code plugin marketplace.
 
 Add the GitHub repository as a marketplace:
 
@@ -38,9 +89,9 @@ Restart/reload Claude Code if your current session does not immediately discover
 
 The installed skill is `reviewing-developer-documentation` and is activated automatically when a documentation-review task matches its description.
 
-### Project-scoped alternative
+### Manual project-scoped alternative
 
-If you do not want a plugin installation, copy `skills/reviewing-developer-documentation/` into the target repository as:
+If you do not want an installer, copy `skills/reviewing-developer-documentation/` into the target repository as:
 
 ```text
 .claude/skills/reviewing-developer-documentation/
@@ -48,7 +99,7 @@ If you do not want a plugin installation, copy `skills/reviewing-developer-docum
 
 Claude Code discovers project skills from `.claude/skills/` automatically.
 
-For a personal standalone skill, copy it to:
+For a personal standalone Claude Code skill, copy it to:
 
 ```text
 ~/.claude/skills/reviewing-developer-documentation/
@@ -83,14 +134,27 @@ skills/
     ├── SKILL.md
     └── reference/
         ├── mkdocs-review.md
+        ├── page-type-checks.md
         └── review-rubric.md
 evals/
 └── evals.json
 ```
 
+The root `skills/<skill-name>/SKILL.md` layout is intentionally portable. GitHub CLI and Agent Skills-compatible tools can discover it directly, while `.claude-plugin/` provides the additional Claude Code plugin distribution path.
+
+## Validation and evaluation
+
+For maintainers, GitHub CLI can validate repository skills against the Agent Skills specification:
+
+```bash
+gh skill publish --dry-run
+```
+
+The scenarios in `evals/evals.json` cover developer journeys, source-of-truth drift, page-type behavior, MkDocs rendering compatibility, and house-style boundaries. For stronger skill evaluation, run representative prompts both without the skill and with the skill enabled, compare the results, and repeat across the Claude models you intend to support.
+
 ## Design notes
 
-The skill is intentionally concise at the entry point and keeps the scoring rubric and MkDocs-specific guidance in one-level-deep reference files. This follows the progressive-disclosure model recommended for Agent Skills.
+The skill is intentionally concise at the entry point and keeps the scoring rubric, page-type contracts, and MkDocs-specific guidance in one-level-deep reference files. This follows the progressive-disclosure model recommended for Agent Skills.
 
 The review approach is informed by:
 
