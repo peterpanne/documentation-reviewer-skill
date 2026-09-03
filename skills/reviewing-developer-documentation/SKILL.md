@@ -12,6 +12,7 @@ Review documentation as a developer trying to complete real work. Optimize for c
 - Read project-specific instructions first: `CLAUDE.md`, `CONTRIBUTING.md`, documentation style guides, and relevant repository conventions.
 - Treat implementation, schemas, action metadata, configuration definitions, tests, and release behavior as sources of truth. Never invent behavior to fill a documentation gap.
 - Separate **incorrect**, **missing**, **ambiguous**, and **unverified** information.
+- Verify commands, flags, configuration keys, file paths, URLs, UI labels, and internal page links before treating them as valid. Plausible-looking syntax is not evidence.
 - Prioritize reader impact over stylistic preference. Do not flood the review with low-value grammar nits.
 - Do not modify files during a review unless the user explicitly asks to fix findings.
 - Never expose secrets found in examples, fixtures, workflows, logs, or local configuration. Refer to the file and issue without repeating the secret.
@@ -56,7 +57,7 @@ mkdocs build --strict
 
 Do not install packages, rewrite lockfiles, or change the environment unless the user asked for that. If a build cannot be run, record the limitation rather than guessing.
 
-### 4. Review information architecture
+### 4. Review information architecture and page purpose
 
 Classify content by reader need:
 
@@ -65,9 +66,13 @@ Classify content by reader need:
 - technical reference;
 - explanation/concepts.
 
-A site does not need four literal top-level sections, but each important reader need should have an obvious home. Flag navigation that exposes implementation structure while hiding common developer workflows.
+Also recognize landing/overview, troubleshooting, and FAQ content where those forms are useful.
+
+A site does not need literal top-level sections for each type, but each important reader need should have an obvious home. Flag navigation that exposes implementation structure while hiding common developer workflows.
 
 For the full rubric, read [reference/review-rubric.md](reference/review-rubric.md).
+
+For page-level expectations, read [reference/page-type-checks.md](reference/page-type-checks.md).
 
 For MkDocs-specific checks, read [reference/mkdocs-review.md](reference/mkdocs-review.md).
 
@@ -81,14 +86,18 @@ At minimum, test these journeys when relevant:
 4. **Failure recovery**: Can a developer diagnose a likely error from symptoms/logs and find a concrete resolution?
 5. **Upgrade/change**: Can a developer determine compatibility, breaking changes, deprecations, or version-specific behavior when that matters?
 
-### 6. Cross-check examples and reference material
+For important pages in each journey, identify the page's job and apply the matching page-type contract rather than using one generic checklist everywhere.
+
+### 6. Cross-check examples, reference material, and authored syntax
 
 For every important example or reference page sampled:
 
 - compare names, inputs, defaults, outputs, permissions, and constraints with source-of-truth files;
 - verify placeholders are obvious and examples contain enough context to copy safely;
 - check that success criteria or expected output are stated where useful;
-- flag stale, impossible, insecure, or contradictory examples with high priority;
+- verify internal links and referenced paths exist before accepting or recommending them;
+- when non-standard MkDocs/Material syntax is used, verify the active `mkdocs.yml` enables the required extension or theme support;
+- flag stale, impossible, insecure, unsupported-rendering, or contradictory examples with high priority;
 - prefer generated or source-derived reference material when manual duplication is likely to drift.
 
 ### 7. Score and prioritize
