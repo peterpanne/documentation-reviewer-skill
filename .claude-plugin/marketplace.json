@@ -9,7 +9,7 @@
     {
       "name": "documentation-reviewer",
       "description": "Reviews developer-facing software documentation with bundled specialist subagents, deterministic parallel fan-out, cognitive-load analysis, evidence-based merging, a weighted quality rubric, page-type contracts, and MkDocs-specific checks.",
-      "version": "1.4.1",
+      "version": "1.4.2",
       "author": {
         "name": "peterpanne"
       },
